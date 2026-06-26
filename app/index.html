@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1f6feb">
+<title>SafeCheck — Sopralluogo sicurezza</title>
+<style>
+  :root {
+    --c: #1e9e54;        /* Conforme - verde */
+    --pc: #e08a16;       /* Parz. Conforme - arancione */
+    --nc: #d23b3b;       /* Non Conforme - rosso */
+    --nv: #6b7280;       /* Non Verificabile - grigio */
+    --na: #9aa3af;       /* Non Applicabile - grigio chiaro */
+    --bg: #ffffff;
+    --ink: #1a1f29;
+    --muted: #5b6472;
+    --line: #e2e6ec;
+    --accent: #1f6feb;
+    --soft: #f5f7fa;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--soft);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- generic ---------- */
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 0; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .pad { padding: 18px 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+  input[type=text], input[type=date], input[type=time], textarea, select {
+    width: 100%;
+    font: inherit;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+  }
+  select { appearance: none; -webkit-appearance: none; background-image: none; }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31,111,235,.15); }
+  .fld-select { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); appearance: none; -webkit-appearance: none; margin-bottom: 2px; }
+  .fld-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31,111,235,.15); }
+
+  button { font: inherit; cursor: pointer; border: none; }
+  .btn {
+    display: block; width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    background: var(--accent);
+    color: #fff;
+    min-height: 50px;
+  }
+  .btn:active { filter: brightness(.94); }
+  .btn.ghost { background: #fff; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn.ghost:disabled { color: var(--muted); border-color: var(--line); opacity: .55; cursor: default; }
+
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-weight: 800; font-size: 18px;
+  }
+
+  /* ---------- header / progress ---------- */
+  header.bar {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px 12px;
+  }
+  .crumbs { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .crumbs strong { font-size: 15px; }
+  .crumbs .count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .progress { height: 7px; background: var(--soft); border-radius: 99px; margin-top: 9px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s ease; }
+
+  /* ---------- question card ---------- */
+  .sec-desc { background: var(--soft); border-radius: 12px; padding: 12px 14px; margin: 0 0 6px; }
+  .sec-desc .muted { margin: 0; }
+  .q {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    margin: 12px 0;
+  }
+  .q.answered { border-color: #cfe3d6; }
+  .q .qid { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .3px; }
+  .q .qtext { margin: 4px 0 12px; font-size: 15.5px; line-height: 1.4; }
+
+  .opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+  .opt {
+    min-height: 48px;
+    border-radius: 11px;
+    border: 1.5px solid var(--oc);
+    background: #fff;
+    color: var(--oc);
+    font-weight: 800;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .05s ease;
+  }
+  .opt:active { transform: scale(.94); }
+  .opt[data-v=C]  { --oc: var(--c); }
+  .opt[data-v=PC] { --oc: var(--pc); }
+  .opt[data-v=NC] { --oc: var(--nc); }
+  .opt[data-v=NV] { --oc: var(--nv); }
+  .opt[data-v=NA] { --oc: var(--na); }
+  .opt.sel {
+    background: var(--oc);
+    color: #fff;
+    border-width: 3px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .opt-legend { display:flex; flex-wrap:wrap; gap:10px 14px; font-size:12px; color:var(--muted); margin-top:10px; }
+  .opt-legend b { color: var(--ink); }
+
+  .qextra { margin-top: 12px; }
+  .fld-label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 5px; }
+  .qextra textarea { min-height: 56px; }
+  .warn {
+    margin-top: 10px; font-size: 12.5px; font-weight: 600; color: #8a4b00;
+    background: #fff4e2; border-left: 3px solid var(--pc); padding: 8px 10px; border-radius: 6px;
+  }
+  .hint {
+    margin-top: 10px; font-size: 12.5px; color: var(--muted);
+    background: #fbfcfe; border-left: 3px solid var(--line); padding: 8px 10px; border-radius: 6px;
+  }
+
+  /* badge esito (riepilogo) */
+  .badge { display:inline-block; padding:2px 9px; border-radius:99px; font-size:11px; font-weight:800; color:#fff; vertical-align:middle; }
+  .badge.C{background:var(--c)} .badge.PC{background:var(--pc)} .badge.NC{background:var(--nc)}
+  .badge.NV{background:var(--nv)} .badge.NA{background:var(--na)}
+
+  /* elenco NC/PC nel riepilogo */
+  .findings { list-style:none; padding:0; margin:8px 0 0; }
+  .findings > li { border:1px solid var(--line); border-left-width:4px; border-radius:10px; padding:11px 12px; margin-bottom:10px; }
+  .findings > li.NC { border-left-color: var(--nc); }
+  .findings > li.PC { border-left-color: var(--pc); }
+  .findings .fhead { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .findings .fid { font-size:12px; font-weight:700; color:var(--muted); }
+  .findings .ftext { font-size:14px; margin:6px 0 4px; }
+  .findings .frow { font-size:13px; margin-top:6px; }
+  .findings .frow .k { font-weight:700; color:var(--muted); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.3px; }
+  .findings .frow .v { color:var(--ink); }
+  .findings .frow .v.empty { color:#b1271f; font-style:italic; }
+
+  .navrow { display: flex; gap: 10px; margin: 18px 0 6px; }
+  .navrow .btn { flex: 1; }
+
+  /* ---------- summary ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 8px 0 16px; }
+  .tile { border-radius: 12px; padding: 12px 6px; text-align: center; color: #fff; }
+  .tile .n { font-size: 22px; font-weight: 800; line-height: 1; }
+  .tile .l { font-size: 11px; font-weight: 700; opacity: .95; margin-top: 4px; }
+  .tile.C{background:var(--c)} .tile.PC{background:var(--pc)} .tile.NC{background:var(--nc)}
+  .tile.NV{background:var(--nv)} .tile.NA{background:var(--na)}
+
+  .panel { border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 12px 0; }
+  .miss { list-style: none; padding: 0; margin: 8px 0 0; }
+  .miss li { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .miss li:last-child { border-bottom: none; }
+  .miss .jump { color: var(--accent); font-weight: 700; font-size: 12px; }
+  .ok { color: var(--c); font-weight: 700; }
+
+  .topnav { display:flex; gap:8px; margin-bottom:14px; }
+  .topnav button { flex:1; font-size:13px; padding:9px; border-radius:10px; background:var(--soft); color:var(--muted); font-weight:600; }
+  .topnav button.active { background: var(--accent); color:#fff; }
+
+  .footer-note { font-size: 11px; color: var(--muted); text-align: center; padding: 18px 16px 28px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   DOMANDE — incorporato da:
+   seed/templates/verbale-sopralluogo-sicurezza-lavoro-v1.cleanroom.json (v1.0.3)
+   48 domande in 7 sezioni. note_tecnico = guida interna alla compilazione.
+   ========================================================================= */
+const DOMANDE = {
+  template_id: "verbale-sopralluogo-sicurezza-lavoro-v1",
+  versione: "1.0.3",
+  sezioni: [
+    { id:"SEZ-01", nome:"Organizzazione della sicurezza",
+      descrizione:"Struttura organizzativa della sicurezza: nomine, deleghe, organigramma.",
+      domande:[
+        {id:"D-01-001", testo:"È presente e documentato l'atto di nomina del Responsabile del Servizio di Prevenzione e Protezione (RSPP)?", nt:"Verificare che la nomina sia sottoscritta dal datore di lavoro e accettata dal nominato (art. 32)."},
+        {id:"D-01-002", testo:"È presente e documentato l'atto di nomina del Medico Competente (ove previsto dalla valutazione del rischio)?", nt:"Obbligatoria solo se il DVR prevede sorveglianza sanitaria. Non richiedere se non prevista."},
+        {id:"D-01-003", testo:"Sono presenti e documentate le nomine degli Addetti al Servizio di Prevenzione e Protezione (ASPP), ove previsti?", nt:"Gli ASPP sono obbligatori solo in alcune tipologie/dimensioni aziendali."},
+        {id:"D-01-004", testo:"Sono presenti e documentate le nomine degli Addetti Antincendio e delle loro qualifiche?", nt:"Verificare il livello di rischio incendio che determina il monte ore di formazione."},
+        {id:"D-01-005", testo:"Sono presenti e documentate le nomine degli Addetti al Primo Soccorso?", nt:"Gruppo A/B/C determina durata e contenuto formazione. Aggiornamento ogni 3 anni."},
+        {id:"D-01-006", testo:"È presente la designazione del Rappresentante dei Lavoratori per la Sicurezza (RLS) o risulta eletto/nominato?", nt:"L'assenza di RLS non è sempre NC automatica: in alcuni casi supplisce l'RLST territoriale."},
+        {id:"D-01-007", testo:"Sono presenti aggiornamenti o revisioni delle nomine a seguito di variazioni organizzative rilevanti?", nt:"Verificare cambi di figure chiave o nuove unità produttive non riflesse negli atti."},
+        {id:"D-01-008", testo:"È presente documentazione relativa alla riunione periodica di prevenzione e protezione (ove obbligatoria)?", nt:"Obbligatoria nelle aziende con più di 15 dipendenti."}
+      ]},
+    { id:"SEZ-02", nome:"Documentazione di sicurezza",
+      descrizione:"Disponibilità, completezza e aggiornamento dei documenti di sicurezza obbligatori.",
+      domande:[
+        {id:"D-02-001", testo:"È presente il Documento di Valutazione dei Rischi (DVR) redatto ai sensi del D.Lgs. 81/2008?", nt:"Verificare data, firma datore/RSPP/RLS e inclusione dei rischi specifici dell'attività."},
+        {id:"D-02-002", testo:"Il DVR risulta aggiornato a seguito di modifiche del processo produttivo, dell'organizzazione o degli ambienti?", nt:"Confrontare data ultima revisione con infortuni, modifiche, nuove attrezzature."},
+        {id:"D-02-003", testo:"È disponibile il Piano di Emergenza ed Evacuazione (PEE) o documento equivalente?", nt:"Verificare se affisso, conosciuto dai lavoratori e se sono state fatte prove di evacuazione."},
+        {id:"D-02-004", testo:"Sono presenti i registri di verifica e manutenzione delle attrezzature soggette a controllo periodico?", nt:"Verificare quali attrezzature presenti rientrano nell'Allegato VII. Niente NC generalizzate."},
+        {id:"D-02-005", testo:"È disponibile il documento di valutazione del rischio incendio o la relativa CPI, se richiesta?", nt:"Non tutte le attività richiedono CPI. Verificare D.P.R. 151/2011."},
+        {id:"D-02-006", testo:"Sono presenti e aggiornate le schede di sicurezza (SDS) delle sostanze e preparati pericolosi utilizzati?", nt:"Se non si usano sostanze pericolose, classificare come NA."},
+        {id:"D-02-007", testo:"È presente e aggiornato il registro infortuni o è in uso il sistema di segnalazione tramite INAIL?", nt:"Il registro cartaceo è abolito: la verifica riguarda le procedure di comunicazione INAIL."},
+        {id:"D-02-008", testo:"Sono presenti autorizzazioni, licenze o certificazioni obbligatorie per lo svolgimento dell'attività specifica?", nt:"Punto generico, dipende dall'attività. Se non rilevante, classificare come NA."}
+      ]},
+    { id:"SEZ-03", nome:"Formazione, informazione e addestramento",
+      descrizione:"Attività di formazione, informazione e addestramento dei lavoratori.",
+      domande:[
+        {id:"D-03-001", testo:"I lavoratori risultano aver ricevuto formazione generale e specifica sui rischi connessi alla propria mansione?", nt:"Verificare i registri formativi senza acquisire dati sanitari o mansionari personali."},
+        {id:"D-03-002", testo:"I lavoratori preposti hanno ricevuto la formazione aggiuntiva prevista per i preposti?", nt:"8 ore per i preposti. Se non esistono preposti, classificare come NA."},
+        {id:"D-03-003", testo:"I dirigenti (ove presenti) hanno ricevuto la formazione specifica prevista per i dirigenti con delega?", nt:"16 ore per i dirigenti. Se non esistono, classificare come NA."},
+        {id:"D-03-004", testo:"Gli aggiornamenti formativi periodici risultano pianificati e, ove scaduti, ripetuti?", nt:"Periodicità tipica quinquennale. Verificare le date dell'ultima formazione."},
+        {id:"D-03-005", testo:"È presente documentazione delle attività di informazione sui rischi generali e specifici ai lavoratori?", nt:"L'informazione è distinta dalla formazione: opuscoli, riunioni, affissioni."},
+        {id:"D-03-006", testo:"Per attrezzature specifiche o operazioni a rischio, è stato effettuato l'addestramento pratico documentato?", nt:"Es. carrelli, PLE. Se non presenti attrezzature soggette, classificare come NA."},
+        {id:"D-03-007", testo:"La formazione degli addetti antincendio e primo soccorso è documentata e aggiornata?", nt:"Incrociare con le nomine (SEZ-01). Nomine presenti ma formazione scaduta = NC."},
+        {id:"D-03-008", testo:"I neoassunti o assegnati a nuove mansioni vengono formati prima o al momento dell'assunzione/cambio mansione?", nt:"Verificare procedura di on-boarding sicurezza. Niente dati personali dei singoli."}
+      ]},
+    { id:"SEZ-04", nome:"Gestione emergenze e primo soccorso",
+      descrizione:"Mezzi e procedure per la gestione delle emergenze e del primo soccorso.",
+      domande:[
+        {id:"D-04-001", testo:"Sono presenti mezzi di estinzione portatili (estintori) in numero e posizionamento adeguati?", nt:"Verificare revisione semestrale e periodica (6 anni) e la segnaletica."},
+        {id:"D-04-002", testo:"Gli estintori presenti risultano revisionati e con data di scadenza valida?", nt:"Verificare il cartellino di ogni estintore: la revisione semestrale è verificabile a vista."},
+        {id:"D-04-003", testo:"È presente il presidio di primo soccorso (cassetta o pacchetto di medicazione) con contenuto conforme?", nt:"Contenuto minimo varia per gruppo (A/B/C). Controllare scadenza dei materiali."},
+        {id:"D-04-004", testo:"Le vie di esodo e le uscite di emergenza sono libere, segnalate e praticabili?", nt:"Verificare ingombri, porte bloccate, segnaletica e illuminazione di emergenza."},
+        {id:"D-04-005", testo:"È presente e funzionante l'illuminazione di emergenza?", nt:"Verificare plafoniere di emergenza; testare l'attivazione se possibile."},
+        {id:"D-04-006", testo:"È presente un sistema di allarme antincendio adeguato alla tipologia del luogo di lavoro?", nt:"Non tutti i luoghi richiedono rilevazione automatica. Verificare le prescrizioni."},
+        {id:"D-04-007", testo:"Sono affisse planimetrie aggiornate con vie di esodo, punti di raccolta e presidi di emergenza?", nt:"Planimetrie datate o riferite a layout modificati sono Parzialmente Conformi."}
+      ]},
+    { id:"SEZ-05", nome:"Ambienti di lavoro",
+      descrizione:"Condizioni degli ambienti: illuminazione, aerazione, ordine, pulizia, strutture.",
+      domande:[
+        {id:"D-05-001", testo:"Gli ambienti di lavoro sono in condizioni adeguate di pulizia, ordine e assenza di ingombri non necessari?", nt:"Verificare stoccaggi improvvisati, pavimenti scivolosi, accumuli nelle vie di transito."},
+        {id:"D-05-002", testo:"L'illuminazione degli ambienti e dei posti di lavoro è adeguata alle attività svolte?", nt:"In assenza di luxmetro, valutazione qualitativa delle aree poco illuminate."},
+        {id:"D-05-003", testo:"La ventilazione degli ambienti è adeguata (naturale o meccanica) rispetto ad attività e rischi?", nt:"Valutare odori, vapori, polveri. Con agenti chimici spesso serve misura strumentale."},
+        {id:"D-05-004", testo:"Pavimenti, pareti e superfici di transito sono in condizioni strutturali sicure (assenza di buche, scivolosità, danni)?", nt:"Verificare corridoi, scale, aree produttive. Documentare la localizzazione precisa."},
+        {id:"D-05-005", testo:"Le scale fisse e portatili (ove presenti) sono in condizioni sicure e rispettano i requisiti strutturali?", nt:"Se non sono presenti scale, classificare come NA. Verificare marcatura CE delle portatili."},
+        {id:"D-05-006", testo:"I servizi igienici e gli spogliatoi (ove presenti) sono in numero adeguato e in condizioni igieniche accettabili?", nt:"Valutare disponibilità e stato. Niente censimento nominale dei lavoratori."},
+        {id:"D-05-007", testo:"La segnaletica di sicurezza (divieti, obblighi, avvertimento, salvataggio) è adeguata, visibile e aggiornata?", nt:"Divieto (rosso), avvertimento (giallo), obbligo (blu), salvataggio (verde). Sbiadita = PC."}
+      ]},
+    { id:"SEZ-06", nome:"Attrezzature, impianti e manutenzioni",
+      descrizione:"Stato e conformità delle attrezzature di lavoro, degli impianti e delle manutenzioni.",
+      domande:[
+        {id:"D-06-001", testo:"Le attrezzature di lavoro presenti sono idonee all'uso, in buono stato manutentivo e prive di difetti visibili?", nt:"Verificare cavi deteriorati, protezioni mancanti, dispositivi di sicurezza manomessi."},
+        {id:"D-06-002", testo:"Le attrezzature soggette a verifica periodica obbligatoria (Allegato VII) risultano verificate nei tempi previsti?", nt:"Se non presenti attrezzature soggette ad Allegato VII, classificare come NA."},
+        {id:"D-06-003", testo:"L'impianto elettrico è dotato di dichiarazione di conformità o di dichiarazione di rispondenza?", nt:"Verificare la presenza del documento (DiCo / DiRi per impianti preesistenti)."},
+        {id:"D-06-004", testo:"L'impianto di messa a terra è presente, verificato e dotato di documentazione aggiornata?", nt:"Verificare denuncia INAIL e verifiche periodiche (biennale ordinario / annuale a rischio)."},
+        {id:"D-06-005", testo:"Sono presenti procedure di manutenzione ordinaria e straordinaria documentate per le attrezzature critiche?", nt:"Verificare registro manutenzioni o sistema equivalente."}
+      ]},
+    { id:"SEZ-07", nome:"DPI, procedure e comportamenti operativi",
+      descrizione:"Disponibilità e uso corretto dei DPI e delle procedure operative.",
+      domande:[
+        {id:"D-07-001", testo:"I DPI previsti dalla valutazione del rischio sono disponibili, idonei e forniti ai lavoratori?", nt:"Verificare la dotazione rispetto al DVR. I DPI devono essere marcati CE."},
+        {id:"D-07-002", testo:"I lavoratori sono informati e addestrati sull'uso corretto dei DPI assegnati?", nt:"Verificare documentazione su uso, manutenzione e conservazione dei DPI."},
+        {id:"D-07-003", testo:"I DPI in uso sono in buono stato di conservazione, non deteriorati e con marcatura CE visibile?", nt:"Guanti strappati, elmetti crepati, filtri scaduti = NC."},
+        {id:"D-07-004", testo:"Esistono procedure operative documentate per le attività a rischio specifico (quota, carichi, agenti chimici)?", nt:"Se l'attività non presenta rischi specifici documentabili, classificare come NA."},
+        {id:"D-07-005", testo:"Il comportamento osservato dei lavoratori durante il sopralluogo è coerente con le misure di prevenzione previste?", nt:"Valutazione qualitativa. Documentare senza identificare singoli lavoratori."}
+      ]}
+  ]
+};
+
+/* opzioni di esito */
+const ESITI = [
+  {v:"C",  label:"Conforme"},
+  {v:"PC", label:"Parz. Conforme"},
+  {v:"NC", label:"Non Conforme"},
+  {v:"NV", label:"Non Verificabile"},
+  {v:"NA", label:"Non Applicabile"}
+];
+
+/* opzioni priorità / scadenza per NC e PC */
+const PRIORITA = ["Alta", "Media", "Bassa"];
+const SCADENZE = ["Immediata", "7 giorni", "30 giorni", "60 giorni", "90 giorni", "Da definire"];
+const qualifiche = ["RSPP", "ASPP", "Consulente sicurezza", "Datore di lavoro", "Tecnico", "Altro"];
+/* default suggeriti in base all'esito */
+const defPriorita = v => (v === "NC" ? "Alta" : "Media");
+const defScadenza = v => (v === "NC" ? "Immediata" : "30 giorni");
+
+/* lista piatta di tutte le domande (con riferimento alla sezione) */
+const ALL_Q = [];
+DOMANDE.sezioni.forEach((s, si) => s.domande.forEach(q =>
+  ALL_Q.push({ ...q, sezIdx: si, sezId: s.id, sezNome: s.nome })));
+const TOT_Q = ALL_Q.length; // 48
+
+/* =========================================================================
+   STATO + PERSISTENZA (localStorage)
+   ========================================================================= */
+const LS_KEY = "safecheck_sopralluogo_v1";
+
+const todayISO = () => {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+};
+const nowHM = () => {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(11, 16);
+};
+
+const defaultState = () => ({
+  meta: {
+    consulente: "", cliente: "", data: todayISO(),
+    sede: "", indirizzo_sede: "", referente_cliente: "",
+    qualifica_tecnico: "RSPP", ora_inizio: nowHM(), note_preliminari: ""
+  },
+  note_conclusive: "",
+  schermata: "start",   // start | compila | riepilogo
+  sezIdx: 0,
+  risposte: {}          // { "D-01-001": { v:"C", note:"" } }
+});
+
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    // migrazione: vecchia chiave "note" -> "osservazioni"
+    if (s.risposte) {
+      Object.keys(s.risposte).forEach(k => {
+        const r = s.risposte[k];
+        if (r && r.note != null && r.osservazioni == null) { r.osservazioni = r.note; }
+        if (r) delete r.note;
+      });
+    }
+    return { ...defaultState(), ...s, meta: { ...defaultState().meta, ...(s.meta || {}) } };
+  } catch (e) {
+    return defaultState();
+  }
+}
+
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch (e) { /* storage pieno o non disponibile: l'app continua in memoria */ }
+}
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+const $ = sel => document.querySelector(sel);
+const app = $("#app");
+const esc = s => (s == null ? "" : String(s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"));
+
+function countAnswered() {
+  return ALL_Q.filter(q => state.risposte[q.id] && state.risposte[q.id].v).length;
+}
+function tally() {
+  const t = { C:0, PC:0, NC:0, NV:0, NA:0 };
+  ALL_Q.forEach(q => { const r = state.risposte[q.id]; if (r && r.v && t[r.v] != null) t[r.v]++; });
+  return t;
+}
+
+/* campi extra di una domanda, condizionati all'esito selezionato */
+function extraHTML(qid) {
+  const r = state.risposte[qid] || {};
+  const v = r.v;
+  const showAzione = v === "NC" || v === "PC";
+  const showMot    = v === "NV" || v === "NA";
+  const ta = (field, label, ph, val) =>
+    `<label class="fld-label">${label}</label>
+     <textarea data-field="${field}" data-q="${qid}" placeholder="${esc(ph)}">${esc(val || "")}</textarea>`;
+  const sel = (field, label, options, val) =>
+    `<label class="fld-label">${label}</label>
+     <select class="fld-select" data-field="${field}" data-q="${qid}">
+       ${options.map(o => `<option value="${esc(o)}"${o === val ? " selected" : ""}>${esc(o)}</option>`).join("")}
+     </select>`;
+  let html = ta("osservazioni", "Osservazioni / localizzazione del rilievo",
+                "Es. corridoio reparto 2: estintore mancante", r.osservazioni);
+  if (showAzione) html += ta("azione_correttiva", "Azione correttiva suggerita",
+                "Es. installare estintore a polvere 6 kg e relativa segnaletica", r.azione_correttiva);
+  if (showAzione) html += sel("priorita", "Priorità", PRIORITA, r.priorita || defPriorita(v));
+  if (showAzione) html += sel("scadenza_suggerita", "Scadenza suggerita", SCADENZE, r.scadenza_suggerita || defScadenza(v));
+  if (showMot)    html += ta("motivazione", "Motivazione",
+                (v === "NA" ? "Es. attività non presente in questa sede" : "Es. documento non disponibile durante la visita"), r.motivazione);
+  if (showAzione) html += `<div class="warn">⚠ Per NC/PC è consigliato indicare osservazione, azione correttiva, priorità e scadenza.</div>`;
+  return html;
+}
+
+/* esporta bozza completa in JSON (download, nessuna dipendenza) */
+function exportBozza() {
+  const payload = {
+    app: "SafeCheck",
+    template_id: DOMANDE.template_id,
+    template_versione: DOMANDE.versione,
+    esportato_il: new Date().toISOString(),
+    visita: { ...state.meta },
+    note_conclusive: state.note_conclusive || "",
+    totale_domande: TOT_Q,
+    risposte: ALL_Q.map(q => {
+      const r = state.risposte[q.id] || {};
+      const out = {
+        id: q.id,
+        sezione: q.sezId,
+        sezione_nome: q.sezNome,
+        testo: q.testo,
+        esito: r.v || null,
+        osservazioni: r.osservazioni || "",
+        azione_correttiva: r.azione_correttiva || "",
+        motivazione: r.motivazione || ""
+      };
+      if (r.v === "NC" || r.v === "PC") {
+        out.priorita = r.priorita || defPriorita(r.v);
+        out.scadenza_suggerita = r.scadenza_suggerita || defScadenza(r.v);
+      }
+      return out;
+    })
+  };
+  try {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "safecheck-bozza-sopralluogo.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  } catch (e) {
+    alert("Esportazione non riuscita su questo browser. Riprova o usa un browser aggiornato.");
+  }
+}
+
+/* azzera la bozza, con conferma esplicita */
+function nuovoSopralluogo() {
+  if (confirm("Confermi di voler cancellare la bozza salvata su questo dispositivo?")) {
+    try { localStorage.removeItem(LS_KEY); } catch (e) {}
+    state = defaultState();
+    save();
+    window.scrollTo(0, 0);
+    render();
+  }
+}
+
+/* =========================================================================
+   RENDER
+   ========================================================================= */
+function render() {
+  if (state.schermata === "compila")  return renderCompila();
+  if (state.schermata === "riepilogo") return renderRiepilogo();
+  return renderStart();
+}
+
+/* ---------- 1. START ---------- */
+function renderStart() {
+  const m = state.meta;
+  const answered = countAnswered();
+  app.innerHTML = `
+    <div class="pad">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>SafeCheck</h1>
+          <div class="muted">Verbale di sopralluogo — sicurezza sul lavoro</div>
+        </div>
+      </div>
+      <p class="muted">Compila i dati della visita, poi avvia il sopralluogo. Le risposte vengono salvate automaticamente su questo dispositivo.</p>
+
+      <label for="f-cons">Nome consulente</label>
+      <input id="f-cons" type="text" inputmode="text" autocomplete="off" placeholder="Es. Mario Rossi" value="${esc(m.consulente)}">
+
+      <label for="f-qual">Qualifica tecnico</label>
+      <select id="f-qual">
+        ${qualifiche.map(o => `<option value="${esc(o)}"${o === (m.qualifica_tecnico || "RSPP") ? " selected" : ""}>${esc(o)}</option>`).join("")}
+      </select>
+
+      <label for="f-cli">Cliente</label>
+      <input id="f-cli" type="text" inputmode="text" autocomplete="off" placeholder="Es. Azienda S.r.l." value="${esc(m.cliente)}">
+
+      <label for="f-sede">Sede</label>
+      <input id="f-sede" type="text" inputmode="text" autocomplete="off" placeholder="Es. Sede di Roma" value="${esc(m.sede)}">
+
+      <label for="f-ind">Indirizzo sede</label>
+      <input id="f-ind" type="text" inputmode="text" autocomplete="off" placeholder="Es. Via Roma 10, 00100 Roma (RM)" value="${esc(m.indirizzo_sede)}">
+
+      <label for="f-ref">Referente cliente</label>
+      <input id="f-ref" type="text" inputmode="text" autocomplete="off" placeholder="Es. Giulia Bianchi" value="${esc(m.referente_cliente)}">
+
+      <label for="f-data">Data sopralluogo</label>
+      <input id="f-data" type="date" value="${esc(m.data)}">
+
+      <label for="f-ora">Ora inizio</label>
+      <input id="f-ora" type="time" value="${esc(m.ora_inizio)}">
+
+      <label for="f-notep">Note preliminari (opzionale)</label>
+      <textarea id="f-notep" placeholder="Es. accesso da ingresso laterale; presente il referente RSPP interno">${esc(m.note_preliminari)}</textarea>
+
+      <div style="height:18px"></div>
+      <button class="btn" id="b-start">${answered > 0 ? "Riprendi sopralluogo" : "Inizia sopralluogo"}</button>
+      ${answered > 0 ? `<p class="muted" style="text-align:center;margin-top:12px">In corso: ${answered}/${TOT_Q} domande risposte</p>
+      <button class="btn ghost" id="b-reset" style="margin-top:6px">Nuovo sopralluogo</button>` : ""}
+
+      <p class="footer-note">Template ${esc(DOMANDE.template_id)} · v${esc(DOMANDE.versione)} · ${TOT_Q} domande · 7 sezioni<br>Non inserire dati reali di clienti o aziende in questa fase di test.</p>
+    </div>`;
+
+  const bind = (id, ev, fn) => { const el = $("#" + id); if (el) el.addEventListener(ev, fn); };
+  const sync = () => {
+    state.meta.consulente        = $("#f-cons").value;
+    state.meta.qualifica_tecnico = $("#f-qual").value;
+    state.meta.cliente           = $("#f-cli").value;
+    state.meta.sede              = $("#f-sede").value;
+    state.meta.indirizzo_sede    = $("#f-ind").value;
+    state.meta.referente_cliente = $("#f-ref").value;
+    state.meta.data              = $("#f-data").value;
+    state.meta.ora_inizio        = $("#f-ora").value;
+    state.meta.note_preliminari  = $("#f-notep").value;
+    save();
+  };
+  ["f-cons","f-qual","f-cli","f-sede","f-ind","f-ref","f-data","f-ora","f-notep"]
+    .forEach(id => { bind(id, "input", sync); bind(id, "change", sync); });
+
+  bind("b-start", "click", () => {
+    sync();
+    state.schermata = "compila";
+    save(); render();
+  });
+  bind("b-reset", "click", nuovoSopralluogo);
+}
+
+/* ---------- 2. COMPILA ---------- */
+function renderCompila() {
+  const si = state.sezIdx;
+  const sez = DOMANDE.sezioni[si];
+  const answered = countAnswered();
+  const pct = Math.round((answered / TOT_Q) * 100);
+
+  const cards = sez.domande.map(q => {
+    const r = state.risposte[q.id] || {};
+    const opts = ESITI.map(o =>
+      `<button class="opt${r.v === o.v ? " sel" : ""}" data-v="${o.v}" data-q="${q.id}" aria-label="${esc(o.label)}">${o.v}</button>`
+    ).join("");
+    return `
+      <div class="q${r.v ? " answered" : ""}" id="q-${q.id}">
+        <div class="qid">${esc(q.id)}</div>
+        <div class="qtext">${esc(q.testo)}</div>
+        <div class="opts">${opts}</div>
+        <div class="qextra" id="ex-${q.id}">${extraHTML(q.id)}</div>
+        ${q.nt ? `<div class="hint">💡 ${esc(q.nt)}</div>` : ""}
+      </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <header class="bar">
+      <div class="crumbs">
+        <strong>${esc(sez.id)} · ${esc(sez.nome)}</strong>
+        <span class="count">${si + 1}/7 — ${answered}/${TOT_Q}</span>
+      </div>
+      <div class="progress"><span style="width:${pct}%"></span></div>
+    </header>
+    <div class="pad">
+      <div class="sec-desc"><p class="muted">${esc(sez.descrizione)}</p></div>
+      ${cards}
+      <div class="navrow">
+        <button class="btn ghost" id="b-prev" ${si === 0 ? "disabled" : ""}>← Sezione prec.</button>
+        ${si < 6
+          ? `<button class="btn" id="b-next">Sezione succ. →</button>`
+          : `<button class="btn" id="b-summary">Vai al riepilogo →</button>`}
+      </div>
+      <button class="btn ghost" id="b-home" style="margin-top:4px">Dati visita / Home</button>
+      <button class="btn ghost" id="b-jump-summary" style="margin-top:4px">Riepilogo completo</button>
+    </div>`;
+
+  // selezione esito
+  app.querySelectorAll(".opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const qid = btn.getAttribute("data-q");
+      const v = btn.getAttribute("data-v");
+      const cur = state.risposte[qid] || {};
+      cur.v = (cur.v === v) ? null : v;   // ritocca per deselezionare
+      // per NC/PC preimposta priorità e scadenza suggerite (se non già definite)
+      if (cur.v === "NC" || cur.v === "PC") {
+        if (!cur.priorita) cur.priorita = defPriorita(cur.v);
+        if (!cur.scadenza_suggerita) cur.scadenza_suggerita = defScadenza(cur.v);
+      }
+      state.risposte[qid] = cur;
+      save();
+      // aggiorna solo la card e la barra per non perdere scroll
+      const card = $("#q-" + qid);
+      card.querySelectorAll(".opt").forEach(o =>
+        o.classList.toggle("sel", o.getAttribute("data-v") === cur.v));
+      card.classList.toggle("answered", !!cur.v);
+      // ridisegna i campi extra in base al nuovo esito (osservazioni/azione/motivazione)
+      $("#ex-" + qid).innerHTML = extraHTML(qid);
+      const a = countAnswered();
+      $(".progress > span").style.width = Math.round((a / TOT_Q) * 100) + "%";
+      $(".crumbs .count").textContent = `${si + 1}/7 — ${a}/${TOT_Q}`;
+    });
+  });
+
+  // salvataggio campi testo (osservazioni / azione_correttiva / motivazione)
+  // delega gestita una sola volta su #app (vedi initFieldDelegation)
+
+  const go = (fn) => { fn(); save(); window.scrollTo(0, 0); render(); };
+  const bind = (id, fn) => { const el = $("#" + id); if (el) el.addEventListener("click", () => go(fn)); };
+  bind("b-prev",    () => { state.sezIdx = Math.max(0, si - 1); });
+  bind("b-next",    () => { state.sezIdx = Math.min(6, si + 1); });
+  bind("b-summary", () => { state.schermata = "riepilogo"; });
+  bind("b-jump-summary", () => { state.schermata = "riepilogo"; });
+  bind("b-home",    () => { state.schermata = "start"; });
+}
+
+/* ---------- 3. RIEPILOGO ---------- */
+function renderRiepilogo() {
+  const t = tally();
+  const answered = countAnswered();
+  const missing = ALL_Q.filter(q => !(state.risposte[q.id] && state.risposte[q.id].v));
+
+  const tiles = ESITI.map(o =>
+    `<div class="tile ${o.v}"><div class="n">${t[o.v]}</div><div class="l">${o.v}</div></div>`
+  ).join("");
+
+  const missHtml = missing.length === 0
+    ? `<p class="ok">✓ Tutte le ${TOT_Q} domande hanno una risposta.</p>`
+    : `<ul class="miss">` + missing.map(q =>
+        `<li><span class="jump" data-goto="${q.sezIdx}">${esc(q.sezId)}</span> · ${esc(q.id)}<br>${esc(q.testo)}</li>`
+      ).join("") + `</ul>`;
+
+  // elenco NC e PC con dettagli
+  const findings = ALL_Q
+    .map(q => ({ q, r: state.risposte[q.id] || {} }))
+    .filter(x => x.r.v === "NC" || x.r.v === "PC");
+  const val = (s) => (s && s.trim().length)
+    ? `<span class="v">${esc(s)}</span>`
+    : `<span class="v empty">— non indicata</span>`;
+  const findHtml = findings.length === 0
+    ? `<p class="ok">✓ Nessuna NC o PC rilevata.</p>`
+    : `<ul class="findings">` + findings.map(({ q, r }) => `
+        <li class="${r.v}">
+          <div class="fhead">
+            <span class="fid">${esc(q.sezId)} · ${esc(q.id)}</span>
+            <span class="badge ${r.v}">${r.v}</span>
+          </div>
+          <div class="ftext">${esc(q.testo)}</div>
+          <div class="frow"><span class="k">Osservazioni</span>${val(r.osservazioni)}</div>
+          <div class="frow"><span class="k">Azione correttiva suggerita</span>${val(r.azione_correttiva)}</div>
+        </li>`).join("") + `</ul>`;
+
+  const m = state.meta;
+  app.innerHTML = `
+    <header class="bar">
+      <div class="crumbs">
+        <strong>Riepilogo sopralluogo</strong>
+        <span class="count">${answered}/${TOT_Q}</span>
+      </div>
+      <div class="progress"><span style="width:${Math.round((answered/TOT_Q)*100)}%"></span></div>
+    </header>
+    <div class="pad">
+      <div class="topnav">
+        <button id="t-edit">Compilazione</button>
+        <button class="active">Riepilogo</button>
+      </div>
+
+      <div class="panel">
+        <div class="muted" style="margin-bottom:6px">Visita</div>
+        <div><strong>${esc(m.cliente || "—")}${m.sede ? " — " + esc(m.sede) : ""}</strong></div>
+        ${m.indirizzo_sede ? `<div class="muted">${esc(m.indirizzo_sede)}</div>` : ""}
+        <div class="muted">Consulente: ${esc(m.consulente || "—")} (${esc(m.qualifica_tecnico || "—")})</div>
+        ${m.referente_cliente ? `<div class="muted">Referente cliente: ${esc(m.referente_cliente)}</div>` : ""}
+        <div class="muted">Data: ${esc(m.data || "—")}${m.ora_inizio ? " · Ora inizio: " + esc(m.ora_inizio) : ""}</div>
+      </div>
+
+      <h2 style="margin:18px 0 4px">Esiti</h2>
+      <div class="tiles">${tiles}</div>
+      <p class="muted" style="margin-top:-6px">C Conforme · PC Parz. Conforme · NC Non Conforme · NV Non Verificabile · NA Non Applicabile</p>
+
+      <div class="panel">
+        <h2>Non conformità e parziali <span class="muted">(${findings.length})</span></h2>
+        ${findHtml}
+      </div>
+
+      <div class="panel">
+        <h2>Domande senza risposta <span class="muted">(${missing.length})</span></h2>
+        ${missHtml}
+      </div>
+
+      <div class="panel">
+        <h2>Note conclusive del tecnico</h2>
+        <textarea id="f-noteconcl" placeholder="Sintesi finale, raccomandazioni generali, priorità d'intervento complessive...">${esc(state.note_conclusive || "")}</textarea>
+      </div>
+
+      <button class="btn" id="b-pdf">Genera verbale PDF</button>
+      <button class="btn ghost" id="b-export" style="margin-top:8px">Esporta bozza JSON</button>
+      <button class="btn ghost" id="b-back" style="margin-top:6px">← Torna alla compilazione</button>
+      <button class="btn ghost" id="b-home2" style="margin-top:6px">Dati visita / Home</button>
+      <button class="btn ghost" id="b-new" style="margin-top:6px">Nuovo sopralluogo</button>
+
+      <p class="footer-note">SafeCheck non certifica la conformità normativa del cliente: supporta solo la raccolta strutturata dei rilievi. La valutazione professionale resta in capo al tecnico utilizzatore.</p>
+    </div>`;
+
+  const bind = (id, fn) => { const el = $("#" + id); if (el) el.addEventListener("click", fn); };
+  const nc = $("#f-noteconcl");
+  if (nc) nc.addEventListener("input", () => { state.note_conclusive = nc.value; save(); });
+  bind("b-pdf", () => alert("Generazione PDF: funzione in arrivo."));
+  bind("b-export", exportBozza);
+  bind("b-new", nuovoSopralluogo);
+  bind("b-back",  () => { state.schermata = "compila"; save(); window.scrollTo(0,0); render(); });
+  bind("t-edit",  () => { state.schermata = "compila"; save(); window.scrollTo(0,0); render(); });
+  bind("b-home2", () => { state.schermata = "start";   save(); window.scrollTo(0,0); render(); });
+  app.querySelectorAll("[data-goto]").forEach(el =>
+    el.addEventListener("click", () => {
+      state.sezIdx = parseInt(el.getAttribute("data-goto"), 10) || 0;
+      state.schermata = "compila"; save(); window.scrollTo(0,0); render();
+    }));
+}
+
+/* =========================================================================
+   AVVIO
+   ========================================================================= */
+// delega input dei campi testo: attaccata UNA volta a #app (sopravvive ai render)
+function syncField(el) {
+  if (!el || !el.getAttribute) return;
+  const field = el.getAttribute("data-field");
+  if (!field) return;
+  const qid = el.getAttribute("data-q");
+  if (!qid) return;
+  const cur = state.risposte[qid] || {};
+  cur[field] = el.value;
+  state.risposte[qid] = cur;
+  save();
+}
+app.addEventListener("input", (e) => syncField(e.target));   // textarea
+app.addEventListener("change", (e) => syncField(e.target));  // select priorità/scadenza
+
+render();
+</script>
+</body>
+</html>
