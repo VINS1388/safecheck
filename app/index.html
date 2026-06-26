@@ -190,6 +190,9 @@
   .footer-note { font-size: 11px; color: var(--muted); text-align: center; padding: 18px 16px 28px; }
   .hidden { display: none !important; }
 </style>
+<!-- Generazione PDF lato browser: jsPDF + AutoTable (CDN, serve connessione solo al primo carico) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -461,6 +464,256 @@ function nuovoSopralluogo() {
 }
 
 /* =========================================================================
+   GENERAZIONE PDF — jsPDF + AutoTable (caricate da CDN)
+   Replica la struttura dello spike approvato scripts/spike-pdf.ts adattata
+   al modello dati reale dell'app (state.meta / state.risposte C·PC·NC·NV·NA).
+   ========================================================================= */
+const PDF_LABEL = { C:"Conforme", PC:"Parz. Conforme", NC:"Non Conforme", NV:"Non Verificabile", NA:"Non Applicabile" };
+const PDF_COL   = { C:[30,158,84], PC:[224,123,0], NC:[192,57,43], NV:[102,102,102], NA:[153,153,153] };
+const PDF_ACCENT=[31,58,95], PDF_TEXT=[26,26,26], PDF_MUTED=[85,85,85], PDF_LINE=[204,204,204], PDF_WHITE=[255,255,255];
+
+function dataBreve(iso) {
+  if (!iso) return "—";
+  const p = String(iso).split("-");
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+}
+
+/* numero verbale: usa quello salvato in state.meta, altrimenti genera VRB-YYYY-LOCAL-NNN
+   (sequenza locale persistita; il numero viene fissato in state.meta alla prima generazione) */
+function numeroVerbale() {
+  if (state.meta.numero_verbale) return state.meta.numero_verbale;
+  const year = (state.meta.data || todayISO()).slice(0, 4);
+  let seq = 0;
+  try { seq = parseInt(localStorage.getItem("safecheck_verbale_seq") || "0", 10) || 0; } catch (e) {}
+  seq += 1;
+  try { localStorage.setItem("safecheck_verbale_seq", String(seq)); } catch (e) {}
+  const num = `VRB-${year}-LOCAL-${String(seq).padStart(3, "0")}`;
+  state.meta.numero_verbale = num;
+  save();
+  return num;
+}
+
+function generaVerbalePDF() {
+  const ns = window.jspdf;
+  if (!ns || !ns.jsPDF) {
+    alert("Libreria PDF non disponibile. Verifica la connessione internet e ricarica la pagina.");
+    return;
+  }
+  const { jsPDF } = ns;
+  const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
+  if (typeof doc.autoTable !== "function") {
+    alert("Plugin tabelle PDF non caricato. Ricarica la pagina e riprova.");
+    return;
+  }
+
+  const m = state.meta;
+  const numero = numeroVerbale();
+  const dataGen = todayISO();
+  const PW = doc.internal.pageSize.getWidth();
+  const PH = doc.internal.pageSize.getHeight();
+  const MARGIN = 18, CW = PW - MARGIN * 2;
+  const tableMargin = { top: 22, bottom: 20, left: MARGIN, right: MARGIN };
+  let cursorY = 24;
+
+  const setText = c => doc.setTextColor(c[0], c[1], c[2]);
+  const setDraw = c => doc.setDrawColor(c[0], c[1], c[2]);
+  const afterTable = () => { cursorY = doc.lastAutoTable.finalY + 5; };
+  function ensureSpace(h) { if (cursorY + h > PH - 22) { doc.addPage(); cursorY = 24; } }
+  function newPage() { doc.addPage(); cursorY = 24; }
+  function heading(label, size) {
+    size = size || 13;
+    ensureSpace(size * 0.5 + 8);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(size); setText(PDF_ACCENT);
+    doc.text(label, MARGIN, cursorY);
+    cursorY += 2.5;
+    setDraw(PDF_LINE); doc.setLineWidth(0.3); doc.line(MARGIN, cursorY, PW - MARGIN, cursorY);
+    cursorY += 6; setText(PDF_TEXT);
+  }
+  function paragraph(s, size, italic) {
+    size = size || 10;
+    doc.setFont("helvetica", italic ? "italic" : "normal"); doc.setFontSize(size); setText(italic ? PDF_MUTED : PDF_TEXT);
+    const lh = size * 0.3528 * 1.18;
+    doc.splitTextToSize(s, CW).forEach(ln => { ensureSpace(lh); doc.text(ln, MARGIN, cursorY); cursorY += lh; });
+    cursorY += 3; setText(PDF_TEXT);
+  }
+
+  /* ---- conteggi e logica esito ---- */
+  const counts = tally();
+  const perSez = {};
+  DOMANDE.sezioni.forEach(s => perSez[s.id] = { C:0, PC:0, NC:0, NV:0, NA:0 });
+  ALL_Q.forEach(q => { const r = state.risposte[q.id]; if (r && r.v && perSez[q.sezId][r.v] != null) perSez[q.sezId][r.v]++; });
+  const denom = counts.C + counts.PC + counts.NC + counts.NV;
+  const pctOf = n => denom === 0 ? "—" : (Math.round((n / denom) * 1000) / 10) + "%";
+  const ncAlta = ALL_Q.some(q => { const r = state.risposte[q.id]; return r && r.v === "NC" && (r.priorita || defPriorita("NC")) === "Alta"; });
+  let esitoComplessivo;
+  if (counts.NC >= 5 || ncAlta) esitoComplessivo = "Non conformità rilevanti — intervento prioritario";
+  else if (counts.NC > 0)       esitoComplessivo = "Non conformità presenti — interventi da pianificare";
+  else if (counts.PC > 0)       esitoComplessivo = "Situazione parzialmente conforme";
+  else                          esitoComplessivo = "Situazione complessivamente conforme";
+
+  /* ============ 1. COPERTINA ============ */
+  let y = 38;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16); setText(PDF_ACCENT);
+  doc.text("SafeCheck", PW / 2, y, { align: "center" });
+  y += 6; doc.setFont("helvetica", "normal"); doc.setFontSize(9); setText(PDF_MUTED);
+  doc.text("verbale di sopralluogo — sicurezza sul lavoro", PW / 2, y, { align: "center" });
+  y += 22; doc.setFont("helvetica", "bold"); doc.setFontSize(21); setText(PDF_TEXT);
+  doc.text("Verbale di Sopralluogo", PW / 2, y, { align: "center" });
+  y += 10; doc.setFontSize(15); doc.text("Sicurezza sul Lavoro", PW / 2, y, { align: "center" });
+  y += 12; setDraw(PDF_LINE); doc.setLineWidth(0.3); doc.line(MARGIN, y, PW - MARGIN, y); y += 4;
+
+  doc.autoTable({
+    startY: y, margin: { left: MARGIN, right: MARGIN }, theme: "plain",
+    styles: { fontSize: 10, cellPadding: 1.6, textColor: PDF_TEXT },
+    columnStyles: { 0: { fontStyle: "bold", textColor: PDF_MUTED, cellWidth: 48 }, 1: { textColor: PDF_TEXT } },
+    body: [
+      ["Numero verbale", numero],
+      ["Cliente", m.cliente || "—"],
+      ["Sede", m.sede || "—"],
+      ["Indirizzo", m.indirizzo_sede || "—"],
+      ["Referente cliente", m.referente_cliente || "—"],
+      ["Tecnico", m.consulente || "—"],
+      ["Qualifica", m.qualifica_tecnico || "—"],
+      ["Data sopralluogo", dataBreve(m.data)],
+      ["Ora inizio", m.ora_inizio || "—"]
+    ]
+  });
+  let cy = doc.lastAutoTable.finalY + 8;
+  setDraw(PDF_LINE); doc.line(MARGIN, cy, PW - MARGIN, cy); cy += 7;
+  doc.setFont("helvetica", "italic"); doc.setFontSize(9); setText(PDF_MUTED);
+  doc.text("Documento generato da SafeCheck — uso interno", PW / 2, cy, { align: "center" });
+  setText(PDF_TEXT);
+
+  /* ============ 2. NOTE E AVVERTENZE ============ */
+  newPage();
+  heading("Note e avvertenze");
+  paragraph("Il presente verbale riporta i rilievi emersi durante il sopralluogo effettuato presso la sede indicata. Le valutazioni espresse si basano sulle evidenze documentali e visive disponibili al momento della visita. Il documento è redatto ai sensi del D.Lgs. 81/2008 e successive modificazioni. I giudizi espressi non sostituiscono la valutazione dei rischi (DVR) né altri adempimenti previsti dalla normativa vigente.");
+
+  /* ============ 3. RIEPILOGO ESECUTIVO ============ */
+  heading("Riepilogo esecutivo");
+  paragraph(`Sopralluogo presso ${m.cliente || "—"}${m.sede ? " — " + m.sede : ""} in data ${dataBreve(m.data)}. Sono stati esaminati ${TOT_Q} punti di verifica in ${DOMANDE.sezioni.length} sezioni; ${countAnswered()} risultano compilati.`);
+
+  doc.autoTable({
+    startY: cursorY, margin: tableMargin, theme: "grid",
+    head: [["Esito", "Conteggio", "% sul verificato"]],
+    headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 9 },
+    bodyStyles: { fontSize: 9, textColor: PDF_TEXT },
+    columnStyles: { 1: { halign: "center", cellWidth: 30 }, 2: { halign: "center", cellWidth: 42 } },
+    body: ["C", "PC", "NC", "NV", "NA"].map(code => [
+      { content: PDF_LABEL[code], styles: { textColor: PDF_COL[code], fontStyle: "bold" } },
+      { content: String(counts[code]), styles: { halign: "center" } },
+      { content: code === "NA" ? "escluso dal calcolo" : pctOf(counts[code]), styles: { halign: "center" } }
+    ])
+  });
+  afterTable();
+  ensureSpace(8);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); setText(PDF_TEXT);
+  doc.text(`Esito complessivo: ${esitoComplessivo}`, MARGIN, cursorY); cursorY += 5;
+  paragraph("Le soglie di esito sono indicative e non costituiscono una classificazione normativa. I punti Non Applicabile (NA) sono esclusi dal denominatore della percentuale.", 8, true);
+
+  heading("Conteggi per sezione", 12);
+  doc.autoTable({
+    startY: cursorY, margin: tableMargin, theme: "grid",
+    head: [["Sezione", "C", "PC", "NC", "NV", "NA", "Tot"]],
+    headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 8 },
+    bodyStyles: { fontSize: 8, textColor: PDF_TEXT },
+    columnStyles: { 0: { cellWidth: "auto" }, 1: { cellWidth: 11, halign: "center" }, 2: { cellWidth: 11, halign: "center" }, 3: { cellWidth: 11, halign: "center" }, 4: { cellWidth: 11, halign: "center" }, 5: { cellWidth: 11, halign: "center" }, 6: { cellWidth: 13, halign: "center" } },
+    body: DOMANDE.sezioni.map(s => {
+      const c = perSez[s.id], tot = c.C + c.PC + c.NC + c.NV + c.NA;
+      return [`${s.id} — ${s.nome}`, c.C, c.PC, c.NC, c.NV, c.NA, tot].map((v, i) =>
+        ({ content: String(v), styles: { halign: i === 0 ? "left" : "center" } }));
+    })
+  });
+  afterTable();
+
+  /* ============ 4. ELENCO RILIEVI (solo NC e PC) ============ */
+  const findings = ALL_Q.map(q => ({ q, r: state.risposte[q.id] || {} })).filter(x => x.r.v === "NC" || x.r.v === "PC");
+  heading("Elenco rilievi");
+  if (!findings.length) {
+    paragraph("Nessuna non conformità (NC) o parziale conformità (PC) rilevata.");
+  } else {
+    doc.autoTable({
+      startY: cursorY, margin: tableMargin, theme: "grid",
+      head: [["Cod.", "Punto di verifica", "Esito", "Osservazioni", "Azione correttiva", "Priorità", "Scadenza"]],
+      headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 7 },
+      bodyStyles: { fontSize: 7, textColor: PDF_TEXT, valign: "top" },
+      columnStyles: { 0: { cellWidth: 16 }, 1: { cellWidth: 34 }, 2: { cellWidth: 14, halign: "center" }, 3: { cellWidth: "auto" }, 4: { cellWidth: "auto" }, 5: { cellWidth: 16, halign: "center" }, 6: { cellWidth: 18, halign: "center" } },
+      body: findings.map(({ q, r }) => [
+        q.id,
+        q.testo.length > 80 ? q.testo.slice(0, 80) + "…" : q.testo,
+        { content: r.v, styles: { textColor: PDF_COL[r.v], fontStyle: "bold", halign: "center" } },
+        r.osservazioni || "—",
+        r.azione_correttiva || "—",
+        r.priorita || defPriorita(r.v),
+        r.scadenza_suggerita || defScadenza(r.v)
+      ])
+    });
+    afterTable();
+  }
+
+  /* ============ 5. DETTAGLIO SEZIONI ============ */
+  newPage();
+  heading("Dettaglio sezioni");
+  DOMANDE.sezioni.forEach(s => {
+    ensureSpace(22);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(11); setText(PDF_ACCENT);
+    doc.text(`${s.id} — ${s.nome}`, MARGIN, cursorY); cursorY += 5; setText(PDF_TEXT);
+    doc.autoTable({
+      startY: cursorY, margin: tableMargin, theme: "grid",
+      head: [["#", "Punto di verifica", "Esito", "Osservazioni", "Azione suggerita"]],
+      headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 7.5 },
+      bodyStyles: { fontSize: 7.5, textColor: PDF_TEXT, valign: "top" },
+      columnStyles: { 0: { cellWidth: 8, halign: "center" }, 1: { cellWidth: "auto" }, 2: { cellWidth: 22, halign: "center" }, 3: { cellWidth: 40 }, 4: { cellWidth: 38 } },
+      body: s.domande.map((q, i) => {
+        const r = state.risposte[q.id] || {};
+        const v = r.v || null;
+        const az = (v === "NC" || v === "PC") ? (r.azione_correttiva || "—") : "";
+        return [
+          String(i + 1),
+          q.testo,
+          { content: v ? PDF_LABEL[v] : "—", styles: { textColor: v ? PDF_COL[v] : PDF_MUTED, fontStyle: "bold", halign: "center" } },
+          r.osservazioni || "—",
+          az
+        ];
+      })
+    });
+    afterTable();
+  });
+
+  /* ============ 6. NOTE CONCLUSIVE ============ */
+  ensureSpace(24);
+  heading("Note conclusive");
+  paragraph((state.note_conclusive && state.note_conclusive.trim()) ? state.note_conclusive : "Nessuna nota conclusiva.");
+
+  /* ============ 7. FIRME ============ */
+  ensureSpace(44);
+  heading("Firme", 12);
+  cursorY += 6;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); setText(PDF_TEXT);
+  doc.text("Il tecnico incaricato: _____________________________     Data: ______________", MARGIN, cursorY);
+  cursorY += 16;
+  doc.text("Il referente cliente: _____________________________     Data: ______________", MARGIN, cursorY);
+
+  /* ============ HEADER + FOOTER su ogni pagina (copertina esclusa per l'header) ============ */
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p++) {
+    doc.setPage(p);
+    if (p > 1) {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); setText(PDF_MUTED);
+      const left = `SafeCheck — ${m.cliente || "—"}${m.sede ? " — " + m.sede : ""}`;
+      doc.text(doc.splitTextToSize(left, CW - 42)[0], MARGIN, 12);
+      doc.text(numero, PW - MARGIN, 12, { align: "right" });
+      setDraw(PDF_LINE); doc.setLineWidth(0.3); doc.line(MARGIN, 14.5, PW - MARGIN, 14.5);
+    }
+    setDraw(PDF_LINE); doc.setLineWidth(0.3); doc.line(MARGIN, PH - 13, PW - MARGIN, PH - 13);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); setText(PDF_MUTED);
+    doc.text(`Doc ID: ${numero}  |  Pag. ${p} di ${total}  |  Gen: ${dataBreve(dataGen)}`, PW / 2, PH - 8, { align: "center" });
+  }
+
+  doc.save(`safecheck-verbale-${numero}-${dataGen}.pdf`);
+}
+
+/* =========================================================================
    RENDER
    ========================================================================= */
 function render() {
@@ -718,7 +971,10 @@ function renderRiepilogo() {
   const bind = (id, fn) => { const el = $("#" + id); if (el) el.addEventListener("click", fn); };
   const nc = $("#f-noteconcl");
   if (nc) nc.addEventListener("input", () => { state.note_conclusive = nc.value; save(); });
-  bind("b-pdf", () => alert("Generazione PDF: funzione in arrivo."));
+  bind("b-pdf", () => {
+    try { generaVerbalePDF(); }
+    catch (e) { alert("Generazione PDF non riuscita: " + (e && e.message ? e.message : e)); }
+  });
   bind("b-export", exportBozza);
   bind("b-new", nuovoSopralluogo);
   bind("b-back",  () => { state.schermata = "compila"; save(); window.scrollTo(0,0); render(); });
