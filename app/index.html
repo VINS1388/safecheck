@@ -89,6 +89,7 @@
     border-bottom: 1px solid var(--line);
     padding: 10px 16px 12px;
   }
+  .verbale-no { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .4px; margin-bottom: 5px; }
   .crumbs { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .crumbs strong { font-size: 15px; }
   .crumbs .count { font-size: 13px; color: var(--muted); white-space: nowrap; }
@@ -138,6 +139,15 @@
   .qextra { margin-top: 12px; }
   .fld-label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 5px; }
   .qextra textarea { min-height: 56px; }
+
+  /* campi extra a comparsa condizionale (animazione max-height; iOS Safari ok) */
+  .collapsible { max-height: 0; overflow: hidden; opacity: 0; }
+  .collapsible.anim { transition: max-height .28s ease, opacity .2s ease; }
+  .collapsible.open { max-height: 800px; opacity: 1; }
+  /* azione correttiva: usabile su mobile, bordo sinistro colorato per esito */
+  .azione-field { min-height: 80px; font-size: 14px; border-left-width: 4px; border-left-color: var(--line); }
+  .azione-field.nc { border-left-color: #c62828; }
+  .azione-field.pc { border-left-color: #f57c00; }
   .warn {
     margin-top: 10px; font-size: 12.5px; font-weight: 600; color: #8a4b00;
     background: #fff4e2; border-left: 3px solid var(--pc); padding: 8px 10px; border-radius: 6px;
@@ -189,6 +199,76 @@
 
   .footer-note { font-size: 11px; color: var(--muted); text-align: center; padding: 18px 16px 28px; }
   .hidden { display: none !important; }
+
+  /* ---------- riepilogo NC/PC ---------- */
+  .rsub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+  .rmeta { font-size: 13px; color: var(--ink); margin-top: 8px; }
+  .rmeta .vno { font-weight: 800; color: var(--accent); letter-spacing: .3px; }
+
+  /* tabella conteggi per sezione */
+  .sezcount { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  .sezcount th { background: #1e3a5f; color: #fff; padding: 8px 4px; font-size: 12px; font-weight: 700; text-align: center; }
+  .sezcount th:first-child { text-align: left; padding-left: 8px; }
+  .sezcount td { padding: 8px 4px; text-align: center; border-bottom: 1px solid var(--line); }
+  .sezcount td:first-child { text-align: left; padding-left: 8px; }
+  .sezcount .sez-nome { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+  .sezcount tr.clean td { background: #f5f5f5; }
+  .sezcount tr.hasNC td:first-child { border-left: 3px solid #c62828; }
+  .sezcount tr.onlyPC td:first-child { border-left: 3px solid #f57c00; }
+  .sezcount tfoot td { font-weight: 800; border-top: 2px solid #1e3a5f; background: #fff; }
+  .sezcount th:not(:first-child), .sezcount td:not(:first-child) { width: 13%; }
+
+  /* lista NC/PC/NV dettagliata */
+  .badge.NV { background: #7b3fa0; }   /* NV in viola in questo elenco */
+  .findlist { list-style: none; padding: 0; margin: 8px 0 0; }
+  .findlist > li { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 11px 12px; margin-bottom: 10px; }
+  .findlist > li.NC { border-left-color: var(--nc); }
+  .findlist > li.PC { border-left-color: var(--pc); }
+  .findlist > li.NV { border-left-color: #7b3fa0; }
+  .finding-top { display: flex; align-items: center; gap: 8px; }
+  .finding-sez { font-size: 11px; color: var(--muted); }
+  .finding-q { font-weight: 700; font-size: 14px; margin: 7px 0 4px; line-height: 1.35; }
+  .finding-oss { font-size: 13px; color: var(--ink); margin: 4px 0; }
+  .finding-az { font-size: 13px; color: var(--ink); margin: 4px 0; }
+  .btn-mod { margin-top: 8px; padding: 8px 14px; border-radius: 9px; background: var(--soft); color: var(--accent); font-weight: 700; font-size: 13px; border: 1.5px solid var(--accent); min-height: 40px; }
+  .btn-mod:active { filter: brightness(.95); }
+
+  /* pulsante PDF blu scuro + stato disabilitato */
+  .btn.btn-pdf { background: #1e3a5f; }
+  .btn.btn-pdf:disabled { background: #9aa7b8; cursor: not-allowed; opacity: 1; }
+
+  /* evidenziazione lampeggiante della domanda dopo "Modifica" */
+  @keyframes scFlash {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,124,0,0); border-color: var(--line); }
+    50%      { box-shadow: 0 0 0 3px #f57c00; border-color: #f57c00; }
+  }
+  .q.flash { animation: scFlash .5s ease-in-out 0s 4; }
+
+  /* ---------- campo nominativo (campo_extra SEZ-01) ---------- */
+  .nom-single { margin-bottom: 2px; }
+  .nom-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+  .nom-empty { font-size: 12px; color: var(--muted); font-style: italic; }
+  .nom-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #e8f0fe; color: #1e3a5f;
+    border-radius: 12px; padding: 3px 8px; font-size: 12px; font-weight: 600;
+  }
+  .nom-tag .nom-x { cursor: pointer; font-weight: 800; font-size: 14px; line-height: 1; color: #1e3a5f; opacity: .7; padding: 0 2px; }
+  .nom-tag .nom-x:active { opacity: 1; }
+  .nom-add { display: flex; gap: 8px; align-items: stretch; }
+  .nom-add .nom-input { flex: 1; }
+  .nom-add .nom-add-btn {
+    flex: 0 0 auto; padding: 0 14px; border-radius: 10px;
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap;
+  }
+  .nom-add .nom-add-btn:active { filter: brightness(.94); }
+
+  /* ---------- contatore obbligatorie mancanti (riepilogo, sopra pulsante PDF) ---------- */
+  .pdf-missing-counter {
+    background: #fff4e2; border-left: 3px solid #f57c00; color: #8a4b00;
+    padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    margin: 14px 0 8px;
+  }
 </style>
 <!-- Generazione PDF lato browser: jsPDF + AutoTable (CDN, serve connessione solo al primo carico) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -212,12 +292,15 @@ const DOMANDE = {
     { id:"SEZ-01", nome:"Organizzazione della sicurezza",
       descrizione:"Struttura organizzativa della sicurezza: nomine, deleghe, organigramma.",
       domande:[
-        {id:"D-01-001", testo:"È presente e documentato l'atto di nomina del Responsabile del Servizio di Prevenzione e Protezione (RSPP)?", nt:"Verificare che la nomina sia sottoscritta dal datore di lavoro e accettata dal nominato (art. 32)."},
-        {id:"D-01-002", testo:"È presente e documentato l'atto di nomina del Medico Competente (ove previsto dalla valutazione del rischio)?", nt:"Obbligatoria solo se il DVR prevede sorveglianza sanitaria. Non richiedere se non prevista."},
-        {id:"D-01-003", testo:"Sono presenti e documentate le nomine degli Addetti al Servizio di Prevenzione e Protezione (ASPP), ove previsti?", nt:"Gli ASPP sono obbligatori solo in alcune tipologie/dimensioni aziendali."},
-        {id:"D-01-004", testo:"Sono presenti e documentate le nomine degli Addetti Antincendio e delle loro qualifiche?", nt:"Verificare il livello di rischio incendio che determina il monte ore di formazione."},
-        {id:"D-01-005", testo:"Sono presenti e documentate le nomine degli Addetti al Primo Soccorso?", nt:"Gruppo A/B/C determina durata e contenuto formazione. Aggiornamento ogni 3 anni."},
-        {id:"D-01-006", testo:"È presente la designazione del Rappresentante dei Lavoratori per la Sicurezza (RLS) o risulta eletto/nominato?", nt:"L'assenza di RLS non è sempre NC automatica: in alcuni casi supplisce l'RLST territoriale."},
+        {id:"D-01-009", testo:"Nomina e documentazione Datore di Lavoro (DL)", nt:"Individuazione del Datore di Lavoro ai sensi dell'art. 2 e relative deleghe di funzioni (art. 16), ove presenti.", campo_extra:{tipo:"nominativo", label:"DL", multiplo:false}},
+        {id:"D-01-001", testo:"È presente e documentato l'atto di nomina del Responsabile del Servizio di Prevenzione e Protezione (RSPP)?", nt:"Verificare che la nomina sia sottoscritta dal datore di lavoro e accettata dal nominato (art. 32).", campo_extra:{tipo:"nominativo", label:"RSPP", multiplo:false}},
+        {id:"D-01-003", testo:"Sono presenti e documentate le nomine degli Addetti al Servizio di Prevenzione e Protezione (ASPP), ove previsti?", nt:"Gli ASPP sono obbligatori solo in alcune tipologie/dimensioni aziendali.", campo_extra:{tipo:"nominativo", label:"ASPP", multiplo:true}},
+        {id:"D-01-002", testo:"È presente e documentato l'atto di nomina del Medico Competente (ove previsto dalla valutazione del rischio)?", nt:"Obbligatoria solo se il DVR prevede sorveglianza sanitaria. Non richiedere se non prevista.", campo_extra:{tipo:"nominativo", label:"MC", multiplo:true}},
+        {id:"D-01-006", testo:"È presente la designazione del Rappresentante dei Lavoratori per la Sicurezza (RLS) o risulta eletto/nominato?", nt:"L'assenza di RLS non è sempre NC automatica: in alcuni casi supplisce l'RLST territoriale.", campo_extra:{tipo:"nominativo", label:"RLS", multiplo:true}},
+        {id:"D-01-004", testo:"Sono presenti e documentate le nomine degli Addetti Antincendio e delle loro qualifiche?", nt:"Verificare il livello di rischio incendio che determina il monte ore di formazione.", campo_extra:{tipo:"nominativo", label:"Addetti antincendio", multiplo:true}},
+        {id:"D-01-005", testo:"Sono presenti e documentate le nomine degli Addetti al Primo Soccorso?", nt:"Gruppo A/B/C determina durata e contenuto formazione. Aggiornamento ogni 3 anni.", campo_extra:{tipo:"nominativo", label:"Addetti primo soccorso", multiplo:true}},
+        {id:"D-01-010", testo:"Nomina Preposti", nt:"Individuazione e nomina dei preposti, anche di fatto, ai sensi dell'art. 19 e art. 18 c.1 lett. b-bis.", campo_extra:{tipo:"nominativo", label:"Preposti", multiplo:true}},
+        {id:"D-01-011", testo:"Nomina Dirigenti (se applicabile)", nt:"Individuazione dei dirigenti con poteri gerarchici/funzionali in materia di sicurezza, ove presenti.", campo_extra:{tipo:"nominativo", label:"Dirigenti", multiplo:true}},
         {id:"D-01-007", testo:"Sono presenti aggiornamenti o revisioni delle nomine a seguito di variazioni organizzative rilevanti?", nt:"Verificare cambi di figure chiave o nuove unità produttive non riflesse negli atti."},
         {id:"D-01-008", testo:"È presente documentazione relativa alla riunione periodica di prevenzione e protezione (ove obbligatoria)?", nt:"Obbligatoria nelle aziende con più di 15 dipendenti."}
       ]},
@@ -230,7 +313,6 @@ const DOMANDE = {
         {id:"D-02-004", testo:"Sono presenti i registri di verifica e manutenzione delle attrezzature soggette a controllo periodico?", nt:"Verificare quali attrezzature presenti rientrano nell'Allegato VII. Niente NC generalizzate."},
         {id:"D-02-005", testo:"È disponibile il documento di valutazione del rischio incendio o la relativa CPI, se richiesta?", nt:"Non tutte le attività richiedono CPI. Verificare D.P.R. 151/2011."},
         {id:"D-02-006", testo:"Sono presenti e aggiornate le schede di sicurezza (SDS) delle sostanze e preparati pericolosi utilizzati?", nt:"Se non si usano sostanze pericolose, classificare come NA."},
-        {id:"D-02-007", testo:"È presente e aggiornato il registro infortuni o è in uso il sistema di segnalazione tramite INAIL?", nt:"Il registro cartaceo è abolito: la verifica riguarda le procedure di comunicazione INAIL."},
         {id:"D-02-008", testo:"Sono presenti autorizzazioni, licenze o certificazioni obbligatorie per lo svolgimento dell'attività specifica?", nt:"Punto generico, dipende dall'attività. Se non rilevante, classificare come NA."}
       ]},
     { id:"SEZ-03", nome:"Formazione, informazione e addestramento",
@@ -243,7 +325,13 @@ const DOMANDE = {
         {id:"D-03-005", testo:"È presente documentazione delle attività di informazione sui rischi generali e specifici ai lavoratori?", nt:"L'informazione è distinta dalla formazione: opuscoli, riunioni, affissioni."},
         {id:"D-03-006", testo:"Per attrezzature specifiche o operazioni a rischio, è stato effettuato l'addestramento pratico documentato?", nt:"Es. carrelli, PLE. Se non presenti attrezzature soggette, classificare come NA."},
         {id:"D-03-007", testo:"La formazione degli addetti antincendio e primo soccorso è documentata e aggiornata?", nt:"Incrociare con le nomine (SEZ-01). Nomine presenti ma formazione scaduta = NC."},
-        {id:"D-03-008", testo:"I neoassunti o assegnati a nuove mansioni vengono formati prima o al momento dell'assunzione/cambio mansione?", nt:"Verificare procedura di on-boarding sicurezza. Niente dati personali dei singoli."}
+        {id:"D-03-008", testo:"I neoassunti o assegnati a nuove mansioni vengono formati prima o al momento dell'assunzione/cambio mansione?", nt:"Verificare procedura di on-boarding sicurezza. Niente dati personali dei singoli."},
+        {id:"D-03-009", testo:"Formazione Datore di Lavoro / RSPP (percorso ex DM 06/03/2013 o esonero)", nt:"Verificare moduli A, B di settore e C per RSPP interno, o l'eventuale esonero, e gli aggiornamenti."},
+        {id:"D-03-010", testo:"Formazione ASPP (moduli A+B, se nominato)", nt:"Solo se sono stati nominati ASPP. Verificare i moduli A+B e gli aggiornamenti quinquennali."},
+        {id:"D-03-011", testo:"Formazione Medico Competente (abilitazione e aggiornamento ECM)", nt:"Solo se è previsto/nominato il Medico Competente. Verificare titolo abilitante e crediti ECM."},
+        {id:"D-03-012", testo:"Formazione RLS (corso 32h iniziale + aggiornamento annuale)", nt:"Verificare il corso iniziale di 32 ore e gli aggiornamenti annuali (art. 37)."},
+        {id:"D-03-013", testo:"Formazione Addetti Antincendio (corso specifico per livello di rischio)", nt:"Incrociare con le nomine (SEZ-01). Durata e aggiornamento dipendono dal livello di rischio incendio."},
+        {id:"D-03-014", testo:"Formazione Addetti Primo Soccorso (corso DM 388/2003 + aggiornamento)", nt:"Incrociare con le nomine (SEZ-01). Contenuto e aggiornamento triennale per gruppo A/B/C."}
       ]},
     { id:"SEZ-04", nome:"Gestione emergenze e primo soccorso",
       descrizione:"Mezzi e procedure per la gestione delle emergenze e del primo soccorso.",
@@ -305,16 +393,158 @@ const qualifiche = ["RSPP", "ASPP", "Consulente sicurezza", "Datore di lavoro", 
 const defPriorita = v => (v === "NC" ? "Alta" : "Media");
 const defScadenza = v => (v === "NC" ? "Immediata" : "30 giorni");
 
+/* correzione_default per domanda (da seed/templates/...cleanroom.json v1.0.3):
+   testo di pre-compilazione dell'azione correttiva per NC/PC. */
+const CORREZIONE_DEFAULT = {
+  "D-01-001": "Predisporre atto formale di nomina del RSPP firmato dal datore di lavoro, con accettazione dell'incarico da parte del nominato.",
+  "D-01-002": "Verificare se la valutazione del rischio prevede l'obbligo di sorveglianza sanitaria. In caso affermativo, procedere alla nomina del Medico Competente con atto formale.",
+  "D-01-003": "Valutare la necessita' di ASPP in base alle dimensioni e alla tipologia di rischio. In caso di necessita', predisporre atti di nomina e verificare i requisiti formativi degli addetti.",
+  "D-01-004": "Procedere alla nomina formale degli addetti antincendio e verificare che abbiano completato la formazione specifica richiesta in base al livello di rischio incendio del luogo di lavoro.",
+  "D-01-005": "Nominare formalmente gli addetti al primo soccorso e verificare che abbiano completato il corso di formazione specifico secondo il gruppo di appartenenza dell'azienda (A, B o C ai sensi del D.M. 388/2003).",
+  "D-01-006": "Verificare se vi sono le condizioni per l'elezione del RLS. In assenza di elezione, registrare il fatto e verificare l'eventuale obbligo di comunicazione all'INAIL tramite il sistema RLST territoriale.",
+  "D-01-007": "A ogni variazione organizzativa significativa (cambio RSPP, cambio MC, variazione numero addetti, apertura nuova sede), procedere alla revisione e aggiornamento degli atti di nomina.",
+  "D-01-008": "Programmare e documentare la riunione periodica annuale di prevenzione e protezione, redigendo verbale con gli argomenti discussi e le presenze.",
+  "D-02-001": "Predisporre il Documento di Valutazione dei Rischi secondo le modalita' previste dagli articoli 28 e 29 del D.Lgs. 81/2008, con identificazione di tutti i rischi presenti e le relative misure di prevenzione e protezione.",
+  "D-02-002": "Procedere all'aggiornamento del DVR entro 30 giorni dalla modifica che lo rende obsoleto, ovvero effettuare la rielaborazione completa se le modifiche sono sostanziali.",
+  "D-02-003": "Redigere o aggiornare il Piano di Emergenza, includendo le procedure di evacuazione, i punti di raccolta, i ruoli degli addetti e le modalita' di comunicazione con i soccorsi.",
+  "D-02-004": "Istituire o aggiornare i registri di controllo delle attrezzature soggette a verifiche periodiche, assicurando che le verifiche siano effettuate nei tempi previsti e che i risultati siano documentati.",
+  "D-02-005": "Verificare l'obbligo specifico di CPI per l'attivita' svolta e, se necessario, avviare la pratica di prevenzione incendi presso il Comando Provinciale dei Vigili del Fuoco competente.",
+  "D-02-006": "Raccogliere e aggiornare le schede di sicurezza di tutti i prodotti chimici utilizzati, verificando che siano nella versione aggiornata (formato a 16 sezioni) e accessibili ai lavoratori.",
+  "D-02-008": "Verificare quali autorizzazioni, licenze o certificazioni sono obbligatorie per la specifica attivita' svolta e assicurarsi che siano in corso di validita'.",
+  "D-03-001": "Pianificare e documentare i percorsi formativi per tutti i lavoratori, distinguendo formazione generale (4 ore) e formazione specifica per rischio (da 4 a 12 ore in base al settore), secondo quanto previsto dall'Accordo Stato-Regioni.",
+  "D-03-002": "Identificare i preposti e verificare che abbiano completato il percorso formativo specifico previsto dall'Accordo Stato-Regioni (8 ore per i preposti).",
+  "D-03-003": "Verificare la presenza di dirigenti con delega in materia di sicurezza e garantire che abbiano completato il percorso formativo specifico (16 ore per i dirigenti).",
+  "D-03-004": "Pianificare gli aggiornamenti formativi scaduti o in scadenza. La periodicita' tipica e' quinquennale, ma verificare le specificita' di settore e ruolo.",
+  "D-03-005": "Predisporre e documentare le attivita' di informazione ai lavoratori sui rischi, sulle misure di prevenzione, sulle procedure di emergenza e sui loro diritti e doveri in materia di sicurezza.",
+  "D-03-006": "Documentare l'addestramento pratico per le attrezzature che lo richiedono (es. carrelli elevatori, PLE, macchine specifiche) con registrazione delle prove pratiche effettuate.",
+  "D-03-007": "Verificare le date dei corsi di formazione degli addetti antincendio e primo soccorso e pianificare gli aggiornamenti scaduti. I corsi hanno periodicita' specifica in base al gruppo/livello di rischio.",
+  "D-03-008": "Istituire una procedura formale di formazione in ingresso per i neoassunti e per i lavoratori che cambiano mansione, con documentazione della data di formazione rispetto alla data di assunzione o cambio.",
+  "D-03-009": "Verificare il percorso formativo del Datore di Lavoro/RSPP secondo il D.M. 06/03/2013 (modulo A, modulo B di settore e modulo C per l'RSPP interno) oppure l'eventuale condizione di esonero, e pianificare gli aggiornamenti previsti.",
+  "D-03-010": "Verificare il completamento dei moduli A+B per gli ASPP nominati e pianificare gli aggiornamenti quinquennali previsti dall'Accordo Stato-Regioni.",
+  "D-03-011": "Verificare il titolo abilitante del Medico Competente e il regolare assolvimento dell'obbligo di aggiornamento ECM previsto dalla normativa.",
+  "D-03-012": "Pianificare corso iniziale 32h e aggiornamenti annuali previsti dall'art. 37 D.Lgs. 81/2008 per il Rappresentante dei Lavoratori per la Sicurezza.",
+  "D-03-013": "Verificare il completamento del corso antincendio specifico per il livello di rischio del luogo di lavoro e pianificare gli aggiornamenti periodici previsti.",
+  "D-03-014": "Verificare il completamento del corso di primo soccorso ai sensi del D.M. 388/2003 per il gruppo di appartenenza dell'azienda e pianificare l'aggiornamento triennale.",
+  "D-04-001": "Verificare numero, tipo (polvere/CO2/altro), posizionamento e segnalazione degli estintori. Integrare o riposizionare secondo quanto previsto dalla valutazione del rischio incendio.",
+  "D-04-002": "Procedere alla revisione periodica degli estintori scaduti attraverso ditte autorizzate. Sostituire o togliere dal servizio gli estintori non conformi.",
+  "D-04-003": "Verificare la presenza della cassetta di primo soccorso e controllare che il contenuto sia completo, non scaduto e conforme all'allegato del D.M. 388/2003 relativo al gruppo di appartenenza.",
+  "D-04-004": "Rimuovere ostruzione dalle vie di esodo, verificare il funzionamento delle porte antipanico, ripristinare o integrare la segnaletica di emergenza. Le vie di esodo devono essere sempre libere e praticabili.",
+  "D-04-005": "Installare o ripristinare l'illuminazione di emergenza nelle vie di esodo, verificando che si attivi automaticamente in caso di mancanza di corrente e che l'autonomia sia adeguata.",
+  "D-04-006": "Verificare l'obbligo e la tipologia di sistema di allarme in base alla classificazione del rischio incendio e alla categoria del luogo di lavoro. Installare o adeguare il sistema se richiesto.",
+  "D-04-007": "Predisporre e affiggere planimetrie di emergenza aggiornate nei luoghi di passaggio e nelle aree di lavoro, con evidenza delle vie di esodo, delle uscite di sicurezza, dei punti di raccolta e della posizione dei presidi.",
+  "D-05-001": "Organizzare e documentare le procedure di pulizia ordinaria e straordinaria degli ambienti. Rimuovere materiali e oggetti non pertinenti dalle aree di lavoro.",
+  "D-05-002": "Verificare i livelli di illuminamento nelle aree di lavoro rispetto ai valori indicativi per la tipologia di attivita'. Integrare o adeguare l'illuminazione dove insufficiente.",
+  "D-05-003": "Verificare l'adeguatezza della ventilazione rispetto alle attivita' svolte e ai prodotti utilizzati. Installare o adeguare sistemi di ventilazione meccanica ove necessario.",
+  "D-05-004": "Procedere alla riparazione o alla segnalazione temporanea delle aree con pavimenti danneggiati, scivolosi o con dislivelli pericolosi. Verificare i percorsi di transito e le aree di passaggio.",
+  "D-05-005": "Verificare lo stato di corrimani, parapetti, gradini e antiscivolamento delle scale. Sostituire o riparare le parti danneggiate. Le scale portatili devono essere marcate CE e usate correttamente.",
+  "D-05-006": "Verificare il numero di servizi igienici rispetto ai lavoratori presenti e il loro stato manutentivo. Pianificare la pulizia e la manutenzione ordinaria.",
+  "D-05-007": "Verificare la completezza e lo stato della segnaletica di sicurezza. Integrare i cartelli mancanti e sostituire quelli danneggiati o sbiaditi.",
+  "D-06-001": "Procedere alla manutenzione ordinaria o straordinaria delle attrezzature con difetti visibili. Togliere dal servizio le attrezzature non sicure fino a riparazione.",
+  "D-06-002": "Verificare lo scadenziario delle verifiche periodiche obbligatorie. Contattare INAIL o soggetti abilitati per le verifiche scadute.",
+  "D-06-003": "Richiedere all'installatore o a un professionista abilitato la dichiarazione di conformita' dell'impianto elettrico o la dichiarazione di rispondenza per gli impianti preesistenti.",
+  "D-06-004": "Verificare la presenza della denuncia di messa a terra all'INAIL (ex ISPESL) e le verifiche periodiche effettuate da soggetto abilitato. Ripristinare la documentazione mancante.",
+  "D-06-005": "Predisporre un piano di manutenzione documentato per le attrezzature critiche, con registrazione degli interventi effettuati.",
+  "D-07-001": "Verificare la dotazione di DPI rispetto a quanto previsto dal DVR. Integrare o sostituire i DPI mancanti, scaduti o non idonei. I DPI devono essere marcati CE.",
+  "D-07-002": "Documentare le attivita' di informazione e addestramento sull'uso, la manutenzione e la conservazione dei DPI assegnati.",
+  "D-07-003": "Sostituire i DPI deteriorati, scaduti o privi di marcatura CE. Istituire un sistema di controllo e sostituzione periodica.",
+  "D-07-004": "Predisporre procedure operative scritte per le attivita' che comportano rischi specifici, incluse le misure di prevenzione da adottare prima, durante e dopo le operazioni.",
+  "D-07-005": "Rafforzare le attivita' di supervisione e informazione ai lavoratori. I preposti devono vigilare sul rispetto delle misure di prevenzione."
+};
+const correzioneDefault = qid => CORREZIONE_DEFAULT[qid] || "";
+
+/* domande NON obbligatorie (dal template cleanroom v1.0.3): tutte le altre lo sono.
+   Serve a disabilitare la generazione PDF finché le obbligatorie non sono compilate. */
+const NON_OBBLIGATORIE = new Set([
+  "D-01-007", "D-01-008", "D-02-008", "D-03-003", "D-03-006",
+  "D-04-006", "D-05-005", "D-06-002", "D-06-005", "D-07-004", "D-07-005"
+]);
+const isObbligatoria = qid => !NON_OBBLIGATORIE.has(qid);
+
 /* lista piatta di tutte le domande (con riferimento alla sezione) */
 const ALL_Q = [];
 DOMANDE.sezioni.forEach((s, si) => s.domande.forEach(q =>
   ALL_Q.push({ ...q, sezIdx: si, sezId: s.id, sezNome: s.nome })));
-const TOT_Q = ALL_Q.length; // 48
+const TOT_Q = ALL_Q.length; // calcolato dinamicamente dal template
+
+/* indice domanda per id (usato per il campo nominativo / campo_extra) */
+const Q_BY_ID = {};
+ALL_Q.forEach(q => { Q_BY_ID[q.id] = q; });
+
+/* =========================================================================
+   CAMPO NOMINATIVO (campo_extra) — SEZ-01
+   Figure UNICHE (multiplo:false) salvano una stringa in r.nominativo.
+   Figure MULTIPLE (multiplo:true) salvano un array in r.nominativi.
+   ========================================================================= */
+function campoExtraNominativo(qid) {
+  const q = Q_BY_ID[qid];
+  return (q && q.campo_extra && q.campo_extra.tipo === "nominativo") ? q.campo_extra : null;
+}
+function getNominativi(qid) {
+  const r = state.risposte[qid] || {};
+  return Array.isArray(r.nominativi) ? r.nominativi : [];
+}
+/* testo dei nominativi per PDF/export: stringa singola o array unito da virgola */
+function nominativoText(qid) {
+  const ce = campoExtraNominativo(qid);
+  if (!ce) return "";
+  const r = state.risposte[qid] || {};
+  if (!ce.multiplo) return (r.nominativo || "").trim();
+  return getNominativi(qid).map(n => String(n).trim()).filter(Boolean).join(", ");
+}
+
+/* domande obbligatorie ancora senza esito */
+function missingObbligatorie() {
+  return ALL_Q.filter(q => isObbligatoria(q.id) && !(state.risposte[q.id] && state.risposte[q.id].v));
+}
+
+/* qid da evidenziare al prossimo render della compilazione (pulsante "Modifica") */
+let pendingHighlight = null;
 
 /* =========================================================================
    STATO + PERSISTENZA (localStorage)
    ========================================================================= */
 const LS_KEY = "safecheck_sopralluogo_v1";
+
+/* =========================================================================
+   CONTATORE NUMERO VERBALE — progressivo per anno solare
+   -------------------------------------------------------------------------
+   Formato numero:  VRB-YYYY-NNN   (es. VRB-2026-001)
+   Persistenza:     localStorage["safecheck_verbale_counter"]
+                      = { anno: 2026, ultimo_numero: 5 }
+   Il contatore si azzera automaticamente al cambio di anno solare:
+   al primo verbale di un nuovo anno NNN riparte da 001.
+   Funzione isolata: è l'UNICO punto che incrementa il contatore.
+   ========================================================================= */
+const VERBALE_COUNTER_KEY = "safecheck_verbale_counter";
+
+function nextVerbaleNumber() {
+  const annoCorrente = new Date().getFullYear();   // anno della data di sistema
+  let counter = { anno: annoCorrente, ultimo_numero: 0 };
+  // 1. leggi il counter da localStorage
+  try {
+    const raw = localStorage.getItem(VERBALE_COUNTER_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // 2. usa il counter solo se valido e dello stesso anno; altrimenti reset (sotto)
+      if (parsed && typeof parsed.ultimo_numero === "number" && parsed.anno === annoCorrente) {
+        counter = parsed;
+      }
+    }
+  } catch (e) { /* counter assente/corrotto: si riparte da 0 per l'anno corrente */ }
+  // 3. incrementa di 1 (garantendo l'anno corrente)
+  counter.anno = annoCorrente;
+  counter.ultimo_numero += 1;
+  // 4. salva il nuovo counter
+  try { localStorage.setItem(VERBALE_COUNTER_KEY, JSON.stringify(counter)); } catch (e) {}
+  // 5. restituisci il numero formattato
+  return "VRB-" + annoCorrente + "-" + String(counter.ultimo_numero).padStart(3, "0");
+}
+
+/* numero da mostrare in UI/PDF: quello salvato nell'anagrafica, oppure
+   "VRB-LEGACY" per le bozze create prima di questa funzionalità */
+function numeroVerbaleCorrente() {
+  return (state.meta && state.meta.numero_verbale) ? state.meta.numero_verbale : "VRB-LEGACY";
+}
 
 const todayISO = () => {
   const d = new Date();
@@ -331,7 +561,8 @@ const defaultState = () => ({
   meta: {
     consulente: "", cliente: "", data: todayISO(),
     sede: "", indirizzo_sede: "", referente_cliente: "",
-    qualifica_tecnico: "RSPP", ora_inizio: nowHM(), note_preliminari: ""
+    qualifica_tecnico: "RSPP", ora_inizio: nowHM(), note_preliminari: "",
+    numero_verbale: ""   // assegnato alla creazione di una nuova visita (non qui)
   },
   note_conclusive: "",
   schermata: "start",   // start | compila | riepilogo
@@ -344,7 +575,14 @@ let state = load();
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return defaultState();
+    if (!raw) {
+      // primo avvio: nessuna bozza salvata → nuova visita, assegna il numero verbale
+      // e persisti subito (così un semplice reload non consuma un nuovo numero)
+      const s = defaultState();
+      s.meta.numero_verbale = nextVerbaleNumber();
+      try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) {}
+      return s;
+    }
     const s = JSON.parse(raw);
     // migrazione: vecchia chiave "note" -> "osservazioni"
     if (s.risposte) {
@@ -354,9 +592,15 @@ function load() {
         if (r) delete r.note;
       });
     }
+    // bozza esistente: si conserva il numero_verbale salvato. Se assente è una
+    // bozza "legacy" (creata prima di questa funzionalità): resta "" e UI/PDF
+    // mostrano "VRB-LEGACY". NON viene assegnato un numero retroattivamente.
     return { ...defaultState(), ...s, meta: { ...defaultState().meta, ...(s.meta || {}) } };
   } catch (e) {
-    return defaultState();
+    const s = defaultState();
+    s.meta.numero_verbale = nextVerbaleNumber();
+    try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e2) {}
+    return s;
   }
 }
 
@@ -382,30 +626,132 @@ function tally() {
   return t;
 }
 
-/* campi extra di una domanda, condizionati all'esito selezionato */
+/* tag dei nominativi (figure multiple) — innerHTML del contenitore .nom-tags */
+function nomTagsHTML(qid) {
+  const arr = getNominativi(qid);
+  if (!arr.length) return `<span class="nom-empty">Nessun nominativo inserito</span>`;
+  return arr.map((n, i) =>
+    `<span class="nom-tag">${esc(n)}<span class="nom-x" data-nom-del="${qid}" data-nom-idx="${i}" role="button" aria-label="Rimuovi ${esc(n)}">×</span></span>`
+  ).join("");
+}
+
+/* HTML del campo nominativo (campo_extra) — singolo input o lista con aggiunta dinamica */
+function nominativoHTML(qid) {
+  const ce = campoExtraNominativo(qid);
+  if (!ce) return "";
+  const r = state.risposte[qid] || {};
+  if (!ce.multiplo) {
+    return `
+      <label class="fld-label">Nominativo ${esc(ce.label)}</label>
+      <input type="text" class="nom-single" data-field="nominativo" data-q="${qid}" autocomplete="off" placeholder="Es. Mario Rossi" value="${esc(r.nominativo || "")}">`;
+  }
+  return `
+    <label class="fld-label">Nominativi ${esc(ce.label)}</label>
+    <div class="nom-tags" id="nomtags-${qid}">${nomTagsHTML(qid)}</div>
+    <div class="nom-add">
+      <input type="text" class="nom-input" id="nominput-${qid}" autocomplete="off" placeholder="Es. Mario Rossi">
+      <button type="button" class="nom-add-btn" data-nom-add="${qid}">＋ Aggiungi</button>
+    </div>`;
+}
+
+/* aggiunge/rimuove un nominativo (figure multiple) e aggiorna solo i tag */
+function addNominativo(qid) {
+  const input = document.getElementById("nominput-" + qid);
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  const cur = state.risposte[qid] || {};
+  if (!Array.isArray(cur.nominativi)) cur.nominativi = [];
+  cur.nominativi.push(val);
+  state.risposte[qid] = cur;
+  save();
+  input.value = "";
+  const cont = document.getElementById("nomtags-" + qid);
+  if (cont) cont.innerHTML = nomTagsHTML(qid);
+  try { input.focus(); } catch (e) {}
+}
+function removeNominativo(qid, idx) {
+  const cur = state.risposte[qid] || {};
+  if (!Array.isArray(cur.nominativi)) return;
+  cur.nominativi.splice(idx, 1);
+  state.risposte[qid] = cur;
+  save();
+  const cont = document.getElementById("nomtags-" + qid);
+  if (cont) cont.innerHTML = nomTagsHTML(qid);
+}
+
+/* campi extra di una domanda — skeleton STABILE (i nodi non vengono distrutti al
+   cambio esito: updateExtra() li mostra/nasconde, così l'azione correttiva può
+   animarsi con max-height). osservazioni è sempre visibile. */
 function extraHTML(qid) {
+  const r = state.risposte[qid] || {};
+  const selOpts = (field, options) =>
+    `<select class="fld-select" data-field="${field}" data-q="${qid}">
+       ${options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}
+     </select>`;
+  return `
+    ${nominativoHTML(qid)}
+    <label class="fld-label">Osservazioni / localizzazione del rilievo</label>
+    <textarea data-field="osservazioni" data-q="${qid}" placeholder="Es. corridoio reparto 2: estintore mancante">${esc(r.osservazioni || "")}</textarea>
+
+    <div class="collapsible azione-wrap" id="az-${qid}">
+      <label class="fld-label">Azione correttiva suggerita</label>
+      <textarea class="azione-field" data-field="azione_correttiva" data-q="${qid}" placeholder="Descrivi l'azione correttiva raccomandata...">${esc(r.azione_correttiva || "")}</textarea>
+    </div>
+
+    <div class="collapsible" id="ps-${qid}">
+      <label class="fld-label">Priorità</label>
+      ${selOpts("priorita", PRIORITA)}
+      <label class="fld-label">Scadenza suggerita</label>
+      ${selOpts("scadenza_suggerita", SCADENZE)}
+      <div class="warn">⚠ Per NC/PC è consigliato indicare osservazione, azione correttiva, priorità e scadenza.</div>
+    </div>
+
+    <div class="collapsible" id="mot-${qid}">
+      <label class="fld-label">Motivazione</label>
+      <textarea data-field="motivazione" data-q="${qid}" placeholder="Es. documento non disponibile durante la visita">${esc(r.motivazione || "")}</textarea>
+    </div>`;
+}
+
+/* mostra/nasconde i campi extra in base all'esito senza ricostruire il DOM */
+function updateExtra(qid) {
   const r = state.risposte[qid] || {};
   const v = r.v;
   const showAzione = v === "NC" || v === "PC";
   const showMot    = v === "NV" || v === "NA";
-  const ta = (field, label, ph, val) =>
-    `<label class="fld-label">${label}</label>
-     <textarea data-field="${field}" data-q="${qid}" placeholder="${esc(ph)}">${esc(val || "")}</textarea>`;
-  const sel = (field, label, options, val) =>
-    `<label class="fld-label">${label}</label>
-     <select class="fld-select" data-field="${field}" data-q="${qid}">
-       ${options.map(o => `<option value="${esc(o)}"${o === val ? " selected" : ""}>${esc(o)}</option>`).join("")}
-     </select>`;
-  let html = ta("osservazioni", "Osservazioni / localizzazione del rilievo",
-                "Es. corridoio reparto 2: estintore mancante", r.osservazioni);
-  if (showAzione) html += ta("azione_correttiva", "Azione correttiva suggerita",
-                "Es. installare estintore a polvere 6 kg e relativa segnaletica", r.azione_correttiva);
-  if (showAzione) html += sel("priorita", "Priorità", PRIORITA, r.priorita || defPriorita(v));
-  if (showAzione) html += sel("scadenza_suggerita", "Scadenza suggerita", SCADENZE, r.scadenza_suggerita || defScadenza(v));
-  if (showMot)    html += ta("motivazione", "Motivazione",
-                (v === "NA" ? "Es. attività non presente in questa sede" : "Es. documento non disponibile durante la visita"), r.motivazione);
-  if (showAzione) html += `<div class="warn">⚠ Per NC/PC è consigliato indicare osservazione, azione correttiva, priorità e scadenza.</div>`;
-  return html;
+
+  const azWrap = document.getElementById("az-" + qid);
+  if (azWrap) {
+    const ta = azWrap.querySelector("textarea");
+    if (ta) {
+      ta.value = r.azione_correttiva || "";
+      ta.classList.remove("nc", "pc");
+      if (v === "NC") ta.classList.add("nc");
+      else if (v === "PC") ta.classList.add("pc");
+    }
+    azWrap.classList.toggle("open", showAzione);
+  }
+
+  const psWrap = document.getElementById("ps-" + qid);
+  if (psWrap) {
+    const selP = psWrap.querySelector('[data-field="priorita"]');
+    const selS = psWrap.querySelector('[data-field="scadenza_suggerita"]');
+    if (selP) selP.value = r.priorita || defPriorita(v);
+    if (selS) selS.value = r.scadenza_suggerita || defScadenza(v);
+    psWrap.classList.toggle("open", showAzione);
+  }
+
+  const motWrap = document.getElementById("mot-" + qid);
+  if (motWrap) {
+    const ta = motWrap.querySelector("textarea");
+    if (ta) {
+      ta.value = r.motivazione || "";
+      ta.placeholder = v === "NA"
+        ? "Es. attività non presente in questa sede"
+        : "Es. documento non disponibile durante la visita";
+    }
+    motWrap.classList.toggle("open", showMot);
+  }
 }
 
 /* esporta bozza completa in JSON (download, nessuna dipendenza) */
@@ -434,6 +780,12 @@ function exportBozza() {
         out.priorita = r.priorita || defPriorita(r.v);
         out.scadenza_suggerita = r.scadenza_suggerita || defScadenza(r.v);
       }
+      const ce = campoExtraNominativo(q.id);
+      if (ce) {
+        out.campo_extra = ce.multiplo
+          ? { tipo: "nominativo", label: ce.label, nominativi: getNominativi(q.id) }
+          : { tipo: "nominativo", label: ce.label, nominativo: r.nominativo || "" };
+      }
       return out;
     })
   };
@@ -457,6 +809,7 @@ function nuovoSopralluogo() {
   if (confirm("Confermi di voler cancellare la bozza salvata su questo dispositivo?")) {
     try { localStorage.removeItem(LS_KEY); } catch (e) {}
     state = defaultState();
+    state.meta.numero_verbale = nextVerbaleNumber();   // nuova visita → nuovo numero progressivo
     save();
     window.scrollTo(0, 0);
     render();
@@ -478,21 +831,6 @@ function dataBreve(iso) {
   return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
 }
 
-/* numero verbale: usa quello salvato in state.meta, altrimenti genera VRB-YYYY-LOCAL-NNN
-   (sequenza locale persistita; il numero viene fissato in state.meta alla prima generazione) */
-function numeroVerbale() {
-  if (state.meta.numero_verbale) return state.meta.numero_verbale;
-  const year = (state.meta.data || todayISO()).slice(0, 4);
-  let seq = 0;
-  try { seq = parseInt(localStorage.getItem("safecheck_verbale_seq") || "0", 10) || 0; } catch (e) {}
-  seq += 1;
-  try { localStorage.setItem("safecheck_verbale_seq", String(seq)); } catch (e) {}
-  const num = `VRB-${year}-LOCAL-${String(seq).padStart(3, "0")}`;
-  state.meta.numero_verbale = num;
-  save();
-  return num;
-}
-
 function generaVerbalePDF() {
   const ns = window.jspdf;
   if (!ns || !ns.jsPDF) {
@@ -507,7 +845,7 @@ function generaVerbalePDF() {
   }
 
   const m = state.meta;
-  const numero = numeroVerbale();
+  const numero = numeroVerbaleCorrente();
   const dataGen = todayISO();
   const PW = doc.internal.pageSize.getWidth();
   const PH = doc.internal.pageSize.getHeight();
@@ -567,7 +905,7 @@ function generaVerbalePDF() {
     styles: { fontSize: 10, cellPadding: 1.6, textColor: PDF_TEXT },
     columnStyles: { 0: { fontStyle: "bold", textColor: PDF_MUTED, cellWidth: 48 }, 1: { textColor: PDF_TEXT } },
     body: [
-      ["Numero verbale", numero],
+      ["N° verbale", numero],
       ["Cliente", m.cliente || "—"],
       ["Sede", m.sede || "—"],
       ["Indirizzo", m.indirizzo_sede || "—"],
@@ -611,47 +949,41 @@ function generaVerbalePDF() {
   doc.text(`Esito complessivo: ${esitoComplessivo}`, MARGIN, cursorY); cursorY += 5;
   paragraph("Le soglie di esito sono indicative e non costituiscono una classificazione normativa. I punti Non Applicabile (NA) sono esclusi dal denominatore della percentuale.", 8, true);
 
+  // tabella conteggi per sezione — mirror del riepilogo a schermo:
+  // nome sezione rosso se ha NC, arancione se solo PC; righe pulite (0 NC/PC) in grigio.
   heading("Conteggi per sezione", 12);
+  const COL_NC = [198, 40, 40], COL_PC = [245, 124, 0], GREY_BG = [245, 245, 245], TOT_BG = [232, 236, 242];
   doc.autoTable({
     startY: cursorY, margin: tableMargin, theme: "grid",
     head: [["Sezione", "C", "PC", "NC", "NV", "NA", "Tot"]],
     headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 8 },
     bodyStyles: { fontSize: 8, textColor: PDF_TEXT },
     columnStyles: { 0: { cellWidth: "auto" }, 1: { cellWidth: 11, halign: "center" }, 2: { cellWidth: 11, halign: "center" }, 3: { cellWidth: 11, halign: "center" }, 4: { cellWidth: 11, halign: "center" }, 5: { cellWidth: 11, halign: "center" }, 6: { cellWidth: 13, halign: "center" } },
-    body: DOMANDE.sezioni.map(s => {
-      const c = perSez[s.id], tot = c.C + c.PC + c.NC + c.NV + c.NA;
-      return [`${s.id} — ${s.nome}`, c.C, c.PC, c.NC, c.NV, c.NA, tot].map((v, i) =>
-        ({ content: String(v), styles: { halign: i === 0 ? "left" : "center" } }));
-    })
+    body: (() => {
+      const rows = DOMANDE.sezioni.map(s => {
+        const c = perSez[s.id], tot = c.C + c.PC + c.NC + c.NV + c.NA;
+        const clean = c.NC === 0 && c.PC === 0;
+        const nameStyles = { halign: "left" };
+        if (c.NC > 0) { nameStyles.textColor = COL_NC; nameStyles.fontStyle = "bold"; }
+        else if (c.PC > 0) { nameStyles.textColor = COL_PC; nameStyles.fontStyle = "bold"; }
+        const mk = (v, st) => ({ content: String(v), styles: clean ? Object.assign({ fillColor: GREY_BG }, st) : st });
+        return [
+          mk(`${s.id} — ${s.nome}`, nameStyles),
+          mk(c.C, { halign: "center" }), mk(c.PC, { halign: "center" }), mk(c.NC, { halign: "center" }),
+          mk(c.NV, { halign: "center" }), mk(c.NA, { halign: "center" }), mk(tot, { halign: "center" })
+        ];
+      });
+      const totVals = [counts.C, counts.PC, counts.NC, counts.NV, counts.NA].reduce((a, b) => a + b, 0);
+      rows.push(["Totale", counts.C, counts.PC, counts.NC, counts.NV, counts.NA, totVals].map((v, i) =>
+        ({ content: String(v), styles: { halign: i === 0 ? "left" : "center", fontStyle: "bold", fillColor: TOT_BG } })));
+      return rows;
+    })()
   });
   afterTable();
 
-  /* ============ 4. ELENCO RILIEVI (solo NC e PC) ============ */
-  const findings = ALL_Q.map(q => ({ q, r: state.risposte[q.id] || {} })).filter(x => x.r.v === "NC" || x.r.v === "PC");
-  heading("Elenco rilievi");
-  if (!findings.length) {
-    paragraph("Nessuna non conformità (NC) o parziale conformità (PC) rilevata.");
-  } else {
-    doc.autoTable({
-      startY: cursorY, margin: tableMargin, theme: "grid",
-      head: [["Cod.", "Punto di verifica", "Esito", "Osservazioni", "Azione correttiva", "Priorità", "Scadenza"]],
-      headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 7 },
-      bodyStyles: { fontSize: 7, textColor: PDF_TEXT, valign: "top" },
-      columnStyles: { 0: { cellWidth: 16 }, 1: { cellWidth: 34 }, 2: { cellWidth: 14, halign: "center" }, 3: { cellWidth: "auto" }, 4: { cellWidth: "auto" }, 5: { cellWidth: 16, halign: "center" }, 6: { cellWidth: 18, halign: "center" } },
-      body: findings.map(({ q, r }) => [
-        q.id,
-        q.testo.length > 80 ? q.testo.slice(0, 80) + "…" : q.testo,
-        { content: r.v, styles: { textColor: PDF_COL[r.v], fontStyle: "bold", halign: "center" } },
-        r.osservazioni || "—",
-        r.azione_correttiva || "—",
-        r.priorita || defPriorita(r.v),
-        r.scadenza_suggerita || defScadenza(r.v)
-      ])
-    });
-    afterTable();
-  }
-
-  /* ============ 5. DETTAGLIO SEZIONI ============ */
+  /* ============ 4. DETTAGLIO SEZIONI ============
+     (NB: NON c'è una lista NC separata — il dettaglio sezioni evidenzia già
+     ogni NC/PC con esito colorato e azione correttiva, per evitare duplicazioni) */
   newPage();
   heading("Dettaglio sezioni");
   DOMANDE.sezioni.forEach(s => {
@@ -660,30 +992,37 @@ function generaVerbalePDF() {
     doc.text(`${s.id} — ${s.nome}`, MARGIN, cursorY); cursorY += 5; setText(PDF_TEXT);
     doc.autoTable({
       startY: cursorY, margin: tableMargin, theme: "grid",
-      head: [["#", "Punto di verifica", "Esito", "Osservazioni", "Azione suggerita"]],
+      head: [["#", "Punto di verifica", "Esito", "Azione correttiva", "Osservazioni"]],
       headStyles: { fillColor: PDF_ACCENT, textColor: PDF_WHITE, fontSize: 7.5 },
       bodyStyles: { fontSize: 7.5, textColor: PDF_TEXT, valign: "top" },
-      columnStyles: { 0: { cellWidth: 8, halign: "center" }, 1: { cellWidth: "auto" }, 2: { cellWidth: 22, halign: "center" }, 3: { cellWidth: 40 }, 4: { cellWidth: 38 } },
+      columnStyles: { 0: { cellWidth: 8, halign: "center" }, 1: { cellWidth: "auto" }, 2: { cellWidth: 22, halign: "center" }, 3: { cellWidth: 38 }, 4: { cellWidth: 40 } },
       body: s.domande.map((q, i) => {
         const r = state.risposte[q.id] || {};
         const v = r.v || null;
-        const az = (v === "NC" || v === "PC") ? (r.azione_correttiva || "—") : "";
+        // azione correttiva solo per NC/PC; cella vuota (non "—") se assente
+        const az = (v === "NC" || v === "PC") ? (r.azione_correttiva || "") : "";
+        // nominativo (SEZ-01 / campo_extra): in testa alle osservazioni
+        const nom = nominativoText(q.id);
+        let oss = r.osservazioni || "";
+        if (nom) oss = (oss ? oss + "\n" : "") + "Nominativo/i: " + nom;
         return [
           String(i + 1),
           q.testo,
           { content: v ? PDF_LABEL[v] : "—", styles: { textColor: v ? PDF_COL[v] : PDF_MUTED, fontStyle: "bold", halign: "center" } },
-          r.osservazioni || "—",
-          az
+          az,
+          oss || "—"
         ];
       })
     });
     afterTable();
   });
 
-  /* ============ 6. NOTE CONCLUSIVE ============ */
-  ensureSpace(24);
-  heading("Note conclusive");
-  paragraph((state.note_conclusive && state.note_conclusive.trim()) ? state.note_conclusive : "Nessuna nota conclusiva.");
+  /* ============ 6. NOTE CONCLUSIVE (solo se compilate) ============ */
+  if (state.note_conclusive && state.note_conclusive.trim()) {
+    ensureSpace(24);
+    heading("Note conclusive");
+    paragraph(state.note_conclusive);
+  }
 
   /* ============ 7. FIRME ============ */
   ensureSpace(44);
@@ -707,7 +1046,7 @@ function generaVerbalePDF() {
     }
     setDraw(PDF_LINE); doc.setLineWidth(0.3); doc.line(MARGIN, PH - 13, PW - MARGIN, PH - 13);
     doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); setText(PDF_MUTED);
-    doc.text(`Doc ID: ${numero}  |  Pag. ${p} di ${total}  |  Gen: ${dataBreve(dataGen)}`, PW / 2, PH - 8, { align: "center" });
+    doc.text(`N° verbale: ${numero}  |  Pag. ${p} di ${total}  |  Gen: ${dataBreve(dataGen)}`, PW / 2, PH - 8, { align: "center" });
   }
 
   doc.save(`safecheck-verbale-${numero}-${dataGen}.pdf`);
@@ -822,6 +1161,7 @@ function renderCompila() {
 
   app.innerHTML = `
     <header class="bar">
+      <div class="verbale-no">Verbale n. ${esc(numeroVerbaleCorrente())}</div>
       <div class="crumbs">
         <strong>${esc(sez.id)} · ${esc(sez.nome)}</strong>
         <span class="count">${si + 1}/7 — ${answered}/${TOT_Q}</span>
@@ -841,6 +1181,11 @@ function renderCompila() {
       <button class="btn ghost" id="b-jump-summary" style="margin-top:4px">Riepilogo completo</button>
     </div>`;
 
+  // stato iniziale dei campi extra (aperto/chiuso) senza animazione,
+  // poi si abilitano le transizioni per le interazioni successive
+  sez.domande.forEach(q => updateExtra(q.id));
+  requestAnimationFrame(() => app.querySelectorAll(".collapsible").forEach(el => el.classList.add("anim")));
+
   // selezione esito
   app.querySelectorAll(".opt").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -848,10 +1193,16 @@ function renderCompila() {
       const v = btn.getAttribute("data-v");
       const cur = state.risposte[qid] || {};
       cur.v = (cur.v === v) ? null : v;   // ritocca per deselezionare
-      // per NC/PC preimposta priorità e scadenza suggerite (se non già definite)
       if (cur.v === "NC" || cur.v === "PC") {
+        // preimposta priorità/scadenza suggerite (se non già definite)
         if (!cur.priorita) cur.priorita = defPriorita(cur.v);
         if (!cur.scadenza_suggerita) cur.scadenza_suggerita = defScadenza(cur.v);
+        // azione correttiva: pre-compila col default SOLO la prima volta (mai impostata).
+        // Se era stata azzerata in precedenza ("") resta vuota.
+        if (cur.azione_correttiva == null) cur.azione_correttiva = correzioneDefault(qid);
+      } else {
+        // C / NV / NA: azzera silenziosamente l'azione correttiva
+        cur.azione_correttiva = "";
       }
       state.risposte[qid] = cur;
       save();
@@ -860,8 +1211,8 @@ function renderCompila() {
       card.querySelectorAll(".opt").forEach(o =>
         o.classList.toggle("sel", o.getAttribute("data-v") === cur.v));
       card.classList.toggle("answered", !!cur.v);
-      // ridisegna i campi extra in base al nuovo esito (osservazioni/azione/motivazione)
-      $("#ex-" + qid).innerHTML = extraHTML(qid);
+      // mostra/nascondi (con animazione) i campi extra in base al nuovo esito
+      updateExtra(qid);
       const a = countAnswered();
       $(".progress > span").style.width = Math.round((a / TOT_Q) * 100) + "%";
       $(".crumbs .count").textContent = `${si + 1}/7 — ${a}/${TOT_Q}`;
@@ -878,52 +1229,86 @@ function renderCompila() {
   bind("b-summary", () => { state.schermata = "riepilogo"; });
   bind("b-jump-summary", () => { state.schermata = "riepilogo"; });
   bind("b-home",    () => { state.schermata = "start"; });
+
+  // evidenziazione domanda dopo "Modifica" dal riepilogo: scroll + bordo lampeggiante 2s
+  if (pendingHighlight) {
+    const targetId = pendingHighlight;
+    pendingHighlight = null;
+    const el = document.getElementById("q-" + targetId);
+    if (el) {
+      requestAnimationFrame(() => {
+        try { el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+        catch (e) { el.scrollIntoView(); }
+        el.classList.add("flash");
+        setTimeout(() => el.classList.remove("flash"), 2000);
+      });
+    }
+  }
 }
 
 /* ---------- 3. RIEPILOGO ---------- */
 function renderRiepilogo() {
+  const m = state.meta;
   const t = tally();
   const answered = countAnswered();
-  const missing = ALL_Q.filter(q => !(state.risposte[q.id] && state.risposte[q.id].v));
 
-  const tiles = ESITI.map(o =>
-    `<div class="tile ${o.v}"><div class="n">${t[o.v]}</div><div class="l">${o.v}</div></div>`
-  ).join("");
+  // conteggi per sezione
+  const perSez = {};
+  DOMANDE.sezioni.forEach(s => perSez[s.id] = { C:0, PC:0, NC:0, NV:0, NA:0 });
+  ALL_Q.forEach(q => { const r = state.risposte[q.id]; if (r && r.v && perSez[q.sezId][r.v] != null) perSez[q.sezId][r.v]++; });
+  const sezRows = DOMANDE.sezioni.map(s => {
+    const c = perSez[s.id];
+    // clean = 0 NC e 0 PC; hasNC = ≥1 NC; onlyPC = PC ma 0 NC
+    const cls = c.NC > 0 ? "hasNC" : (c.PC > 0 ? "onlyPC" : "clean");
+    return `<tr class="${cls}">
+      <td><strong>${esc(s.id)}</strong><span class="sez-nome">${esc(s.nome)}</span></td>
+      <td>${c.C}</td><td>${c.PC}</td><td>${c.NC}</td><td>${c.NV}</td><td>${c.NA}</td>
+    </tr>`;
+  }).join("");
 
-  const missHtml = missing.length === 0
-    ? `<p class="ok">✓ Tutte le ${TOT_Q} domande hanno una risposta.</p>`
-    : `<ul class="miss">` + missing.map(q =>
-        `<li><span class="jump" data-goto="${q.sezIdx}">${esc(q.sezId)}</span> · ${esc(q.id)}<br>${esc(q.testo)}</li>`
-      ).join("") + `</ul>`;
-
-  // elenco NC e PC con dettagli
+  // lista rilievi ordinata per gravità: NC → PC → NV
+  const ord = { NC: 0, PC: 1, NV: 2 };
   const findings = ALL_Q
     .map(q => ({ q, r: state.risposte[q.id] || {} }))
-    .filter(x => x.r.v === "NC" || x.r.v === "PC");
-  const val = (s) => (s && s.trim().length)
-    ? `<span class="v">${esc(s)}</span>`
-    : `<span class="v empty">— non indicata</span>`;
+    .filter(x => x.r.v === "NC" || x.r.v === "PC" || x.r.v === "NV")
+    .sort((a, b) => ord[a.r.v] - ord[b.r.v]);
   const findHtml = findings.length === 0
-    ? `<p class="ok">✓ Nessuna NC o PC rilevata.</p>`
-    : `<ul class="findings">` + findings.map(({ q, r }) => `
-        <li class="${r.v}">
-          <div class="fhead">
-            <span class="fid">${esc(q.sezId)} · ${esc(q.id)}</span>
+    ? `<p class="ok">✓ Nessuna NC, PC o NV rilevata.</p>`
+    : `<ul class="findlist">` + findings.map(({ q, r }) => {
+        const oss = r.osservazioni && r.osservazioni.trim();
+        const az  = r.azione_correttiva && r.azione_correttiva.trim();
+        return `<li class="${r.v}">
+          <div class="finding-top">
             <span class="badge ${r.v}">${r.v}</span>
+            <span class="finding-sez">${esc(q.sezId)} · ${esc(q.sezNome)}</span>
           </div>
-          <div class="ftext">${esc(q.testo)}</div>
-          <div class="frow"><span class="k">Osservazioni</span>${val(r.osservazioni)}</div>
-          <div class="frow"><span class="k">Azione correttiva suggerita</span>${val(r.azione_correttiva)}</div>
-        </li>`).join("") + `</ul>`;
+          <div class="finding-q">${esc(q.testo)}</div>
+          ${oss ? `<div class="finding-oss"><em>${esc(r.osservazioni)}</em></div>` : ""}
+          ${az ? `<div class="finding-az">→ ${esc(r.azione_correttiva)}</div>` : ""}
+          <button class="btn-mod" data-edit-q="${q.id}" data-edit-sez="${q.sezIdx}">Modifica</button>
+        </li>`;
+      }).join("") + `</ul>`;
 
-  const m = state.meta;
+  // domande obbligatorie ancora senza esito → blocca la generazione PDF
+  const mancanti = missingObbligatorie();
+  const pdfDisabled = mancanti.length > 0;
+  const tip = "Completa tutte le domande obbligatorie prima di generare il verbale";
+  const mancantiHtml = mancanti.length === 0
+    ? `<p class="ok">✓ Tutte le domande obbligatorie sono compilate.</p>`
+    : `<ul class="miss">` + mancanti.map(q =>
+        `<li><span class="jump" data-edit-q="${q.id}" data-edit-sez="${q.sezIdx}">${esc(q.sezId)} · ${esc(q.id)}</span><br>${esc(q.testo)}</li>`
+      ).join("") + `</ul>`;
+
   app.innerHTML = `
     <header class="bar">
       <div class="crumbs">
-        <strong>Riepilogo sopralluogo</strong>
+        <strong>Riepilogo non conformità</strong>
         <span class="count">${answered}/${TOT_Q}</span>
       </div>
-      <div class="progress"><span style="width:${Math.round((answered/TOT_Q)*100)}%"></span></div>
+      <p class="rsub">Verifica le NC prima di generare il verbale</p>
+      <div class="rmeta">
+        <span class="vno">${esc(numeroVerbaleCorrente())}</span> · ${esc(m.cliente || "—")}${m.sede ? " — " + esc(m.sede) : ""} · ${esc(m.data || "—")}
+      </div>
     </header>
     <div class="pad">
       <div class="topnav">
@@ -932,36 +1317,39 @@ function renderRiepilogo() {
       </div>
 
       <div class="panel">
-        <div class="muted" style="margin-bottom:6px">Visita</div>
-        <div><strong>${esc(m.cliente || "—")}${m.sede ? " — " + esc(m.sede) : ""}</strong></div>
-        ${m.indirizzo_sede ? `<div class="muted">${esc(m.indirizzo_sede)}</div>` : ""}
-        <div class="muted">Consulente: ${esc(m.consulente || "—")} (${esc(m.qualifica_tecnico || "—")})</div>
-        ${m.referente_cliente ? `<div class="muted">Referente cliente: ${esc(m.referente_cliente)}</div>` : ""}
-        <div class="muted">Data: ${esc(m.data || "—")}${m.ora_inizio ? " · Ora inizio: " + esc(m.ora_inizio) : ""}</div>
+        <h2>Conteggi per sezione</h2>
+        <table class="sezcount">
+          <thead><tr><th>Sezione</th><th>C</th><th>PC</th><th>NC</th><th>NV</th><th>NA</th></tr></thead>
+          <tbody>${sezRows}</tbody>
+          <tfoot><tr><td><strong>Totale</strong></td><td>${t.C}</td><td>${t.PC}</td><td>${t.NC}</td><td>${t.NV}</td><td>${t.NA}</td></tr></tfoot>
+        </table>
       </div>
 
-      <h2 style="margin:18px 0 4px">Esiti</h2>
-      <div class="tiles">${tiles}</div>
-      <p class="muted" style="margin-top:-6px">C Conforme · PC Parz. Conforme · NC Non Conforme · NV Non Verificabile · NA Non Applicabile</p>
-
       <div class="panel">
-        <h2>Non conformità e parziali <span class="muted">(${findings.length})</span></h2>
+        <h2>Rilievi rilevati <span class="muted">(${findings.length})</span></h2>
         ${findHtml}
       </div>
 
       <div class="panel">
-        <h2>Domande senza risposta <span class="muted">(${missing.length})</span></h2>
-        ${missHtml}
+        <h2>Domande obbligatorie da completare <span class="muted">(${mancanti.length})</span></h2>
+        ${mancantiHtml}
       </div>
 
       <div class="panel">
-        <h2>Note conclusive del tecnico</h2>
-        <textarea id="f-noteconcl" placeholder="Sintesi finale, raccomandazioni generali, priorità d'intervento complessive...">${esc(state.note_conclusive || "")}</textarea>
+        <h2>Note conclusive del sopralluogo</h2>
+        <textarea id="f-noteconcl" placeholder="Inserisci osservazioni generali, accordi presi con il cliente, indicazioni per la prossima visita...">${esc(state.note_conclusive || "")}</textarea>
       </div>
 
-      <button class="btn" id="b-pdf">Genera verbale PDF</button>
-      <button class="btn ghost" id="b-export" style="margin-top:8px">Esporta bozza JSON</button>
-      <button class="btn ghost" id="b-back" style="margin-top:6px">← Torna alla compilazione</button>
+      ${pdfDisabled ? `<div class="pdf-missing-counter">⚠ ${mancanti.length === 1
+          ? "Manca 1 domanda obbligatoria da compilare"
+          : "Mancano " + mancanti.length + " domande obbligatorie da compilare"}</div>` : ""}
+      <div class="navrow">
+        <button class="btn ghost" id="b-back">← Torna alla compilazione</button>
+        <button class="btn btn-pdf" id="b-pdf"${pdfDisabled ? ` disabled title="${tip}"` : ""}>Genera verbale PDF →</button>
+      </div>
+      ${pdfDisabled ? `<p class="muted" style="text-align:center;margin-top:6px">${esc(tip)}.</p>` : ""}
+
+      <button class="btn ghost" id="b-export" style="margin-top:10px">Esporta bozza JSON</button>
       <button class="btn ghost" id="b-home2" style="margin-top:6px">Dati visita / Home</button>
       <button class="btn ghost" id="b-new" style="margin-top:6px">Nuovo sopralluogo</button>
 
@@ -972,6 +1360,7 @@ function renderRiepilogo() {
   const nc = $("#f-noteconcl");
   if (nc) nc.addEventListener("input", () => { state.note_conclusive = nc.value; save(); });
   bind("b-pdf", () => {
+    if (pdfDisabled) return;   // guardia: domande obbligatorie incomplete
     try { generaVerbalePDF(); }
     catch (e) { alert("Generazione PDF non riuscita: " + (e && e.message ? e.message : e)); }
   });
@@ -980,10 +1369,16 @@ function renderRiepilogo() {
   bind("b-back",  () => { state.schermata = "compila"; save(); window.scrollTo(0,0); render(); });
   bind("t-edit",  () => { state.schermata = "compila"; save(); window.scrollTo(0,0); render(); });
   bind("b-home2", () => { state.schermata = "start";   save(); window.scrollTo(0,0); render(); });
-  app.querySelectorAll("[data-goto]").forEach(el =>
+
+  // "Modifica" (su un rilievo) e jump (domanda obbligatoria mancante):
+  // torna alla sezione della domanda e la evidenzia con scroll + bordo lampeggiante
+  app.querySelectorAll("[data-edit-q]").forEach(el =>
     el.addEventListener("click", () => {
-      state.sezIdx = parseInt(el.getAttribute("data-goto"), 10) || 0;
-      state.schermata = "compila"; save(); window.scrollTo(0,0); render();
+      pendingHighlight = el.getAttribute("data-edit-q");
+      state.sezIdx = parseInt(el.getAttribute("data-edit-sez"), 10) || 0;
+      state.schermata = "compila";
+      save();
+      render();
     }));
 }
 
@@ -1002,8 +1397,23 @@ function syncField(el) {
   state.risposte[qid] = cur;
   save();
 }
-app.addEventListener("input", (e) => syncField(e.target));   // textarea
+app.addEventListener("input", (e) => syncField(e.target));   // textarea + nominativo singolo
 app.addEventListener("change", (e) => syncField(e.target));  // select priorità/scadenza
+
+// nominativi (figure multiple): aggiunta/rimozione via delegazione su #app
+app.addEventListener("click", (e) => {
+  const add = e.target.closest && e.target.closest("[data-nom-add]");
+  if (add) { addNominativo(add.getAttribute("data-nom-add")); return; }
+  const del = e.target.closest && e.target.closest("[data-nom-del]");
+  if (del) { removeNominativo(del.getAttribute("data-nom-del"), parseInt(del.getAttribute("data-nom-idx"), 10)); }
+});
+// Invio nel campo nominativo = "Aggiungi"
+app.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.classList && e.target.classList.contains("nom-input")) {
+    e.preventDefault();
+    addNominativo(e.target.id.replace("nominput-", ""));
+  }
+});
 
 render();
 </script>
