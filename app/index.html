@@ -318,21 +318,16 @@ const DOMANDE = {
     { id:"SEZ-03", nome:"Formazione, informazione e addestramento",
       descrizione:"Attività di formazione, informazione e addestramento dei lavoratori.",
       domande:[
-        {id:"D-03-001", testo:"I lavoratori risultano aver ricevuto formazione generale e specifica sui rischi connessi alla propria mansione?", nt:"Verificare i registri formativi senza acquisire dati sanitari o mansionari personali."},
-        {id:"D-03-002", testo:"I lavoratori preposti hanno ricevuto la formazione aggiuntiva prevista per i preposti?", nt:"8 ore per i preposti. Se non esistono preposti, classificare come NA."},
-        {id:"D-03-003", testo:"I dirigenti (ove presenti) hanno ricevuto la formazione specifica prevista per i dirigenti con delega?", nt:"16 ore per i dirigenti. Se non esistono, classificare come NA."},
-        {id:"D-03-004", testo:"Gli aggiornamenti formativi periodici risultano pianificati e, ove scaduti, ripetuti?", nt:"Periodicità tipica quinquennale. Verificare le date dell'ultima formazione."},
-        {id:"D-03-005", testo:"È presente documentazione delle attività di informazione sui rischi generali e specifici ai lavoratori?", nt:"L'informazione è distinta dalla formazione: opuscoli, riunioni, affissioni."},
-        {id:"D-03-006", testo:"Per attrezzature specifiche o operazioni a rischio, è stato effettuato l'addestramento pratico documentato?", nt:"Es. carrelli, PLE. Se non presenti attrezzature soggette, classificare come NA."},
-        {id:"D-03-007", testo:"La formazione degli addetti antincendio e primo soccorso è documentata e aggiornata?", nt:"Incrociare con le nomine (SEZ-01). Nomine presenti ma formazione scaduta = NC."},
-        {id:"D-03-008", testo:"I neoassunti o assegnati a nuove mansioni vengono formati prima o al momento dell'assunzione/cambio mansione?", nt:"Verificare procedura di on-boarding sicurezza. Niente dati personali dei singoli."},
-        {id:"D-03-015", testo:"Formazione Datore di Lavoro (corso 16 ore obbligatorio)", nt:"Verificare attestato corso 16 ore per il Datore di Lavoro. Obbligatorio per tutti i DL indipendentemente dal settore. Accordo Stato-Regioni 2025."},
-        {id:"D-03-016", testo:"Formazione DL che svolge direttamente i compiti del SPP (percorso DL-SPP, se applicabile)", nt:"Solo se il Datore di Lavoro svolge direttamente i compiti del Servizio di Prevenzione e Protezione (art. 34 D.Lgs. 81/08). Percorso aggiuntivo: modulo comune 8 ore + eventuali moduli integrativi di settore. Se non applicabile, rispondere NA."},
-        {id:"D-03-017", testo:"Formazione RSPP (Moduli A+B+C se interno; verifica requisiti se esterno)", nt:"Se RSPP interno: verificare percorso Modulo A + Modulo B di settore + Modulo C + eventuali specialistici, salvo esoneri. Se RSPP esterno: acquisire evidenza dei requisiti formativi del consulente, non organizzare corsi per lui."},
-        {id:"D-03-010", testo:"Formazione ASPP (Moduli A+B, se nominato)", nt:"Solo se sono stati nominati ASPP (art. 32 D.Lgs. 81/08). Verificare Moduli A+B e aggiornamenti quinquennali. Se nessun ASPP nominato, rispondere NA."},
-        {id:"D-03-012", testo:"Formazione RLS (corso iniziale 32 ore + aggiornamento annuale, se presente RLS aziendale)", nt:"Solo se è eletto/designato RLS aziendale. Corso iniziale 32 ore (di cui 12 sui rischi specifici). Aggiornamento: 4 ore/anno per aziende 15-50 lav.; 8 ore/anno per aziende >50 lav. Se assente o RLST, rispondere NA."},
-        {id:"D-03-013", testo:"Formazione Addetti Antincendio (corso specifico per livello di rischio)", nt:"Incrociare con le nomine (SEZ-01). Durata e aggiornamento dipendono dal livello di rischio incendio."},
-        {id:"D-03-014", testo:"Formazione Addetti Primo Soccorso (corso DM 388/2003 + aggiornamento)", nt:"Incrociare con le nomine (SEZ-01). Contenuto e aggiornamento triennale per gruppo A/B/C."}
+        {id:"D-03-001", testo:"Formazione lavoratori (generale + specifica + aggiornamento)", nt:"Verificare che tutti i lavoratori abbiano completato formazione generale e specifica per il livello di rischio (basso 8h, medio 12h, alto 16h) e aggiornamento (6h ogni 5 anni). Accordo Stato-Regioni 2025."},
+        {id:"D-03-002", testo:"Formazione preposti (12 ore + aggiornamento)", nt:"Verificare formazione specifica per preposti (12 ore) e aggiornamento periodico. Solo se presenti preposti formali o di fatto. Se non applicabile, rispondere NA."},
+        {id:"D-03-003", testo:"Formazione dirigenti (12 ore + aggiornamento)", nt:"Verificare formazione specifica per dirigenti (12 ore) e aggiornamento periodico. Solo se presenti dirigenti ai fini sicurezza. Se non applicabile, rispondere NA."},
+        {id:"D-03-004", testo:"Formazione Datore di Lavoro (corso 16 ore obbligatorio)", nt:"Verificare attestato corso obbligatorio 16 ore per il Datore di Lavoro. Obbligatorio per tutti i DL indipendentemente dal settore. Accordo Stato-Regioni 2025."},
+        {id:"D-03-005", testo:"Formazione DL che svolge direttamente i compiti del SPP (percorso DL-SPP, se applicabile)", nt:"Solo se il DL svolge direttamente i compiti del SPP ai sensi dell'art. 34 D.Lgs. 81/08. Percorso aggiuntivo: modulo comune 8 ore + moduli integrativi di settore. Se non applicabile, rispondere NA."},
+        {id:"D-03-006", testo:"Formazione RSPP (Moduli A+B+C se interno; verifica requisiti se esterno)", nt:"Se RSPP interno: verificare Moduli A+B di settore+C, salvo esoneri. Se RSPP esterno: acquisire evidenza dei requisiti formativi del consulente, non organizzare corsi per lui."},
+        {id:"D-03-007", testo:"Formazione ASPP (Moduli A+B, se nominato)", nt:"Solo se sono stati nominati ASPP (art. 32 D.Lgs. 81/08). Verificare Moduli A+B e aggiornamenti quinquennali. Se nessun ASPP nominato, rispondere NA."},
+        {id:"D-03-008", testo:"Formazione RLS (corso iniziale 32 ore + aggiornamento annuale, se presente RLS aziendale)", nt:"Solo se è eletto/designato RLS aziendale. Corso iniziale 32 ore (di cui 12 sui rischi specifici). Aggiornamento: 4 ore/anno per aziende 15-50 lav.; 8 ore/anno per aziende >50 lav. Se assente o RLST territoriale, rispondere NA."},
+        {id:"D-03-009", testo:"Formazione Addetti Antincendio (corso specifico per livello di rischio + aggiornamento)", nt:"Verificare corso specifico per il livello di rischio incendio: livello 1 = 4 ore, livello 2 = 8 ore, livello 3 = 16 ore. Aggiornamento quinquennale. Incrociare con nomine SEZ-01."},
+        {id:"D-03-010", testo:"Formazione Addetti Primo Soccorso (corso DM 388/2003 + aggiornamento triennale)", nt:"Verificare corso per il gruppo di appartenenza: gruppo A = 16 ore, gruppi B/C = 12 ore. Aggiornamento almeno triennale. Incrociare con nomine SEZ-01."}
       ]},
     { id:"SEZ-04", nome:"Gestione emergenze e primo soccorso",
       descrizione:"Mezzi e procedure per la gestione delle emergenze e del primo soccorso.",
@@ -412,21 +407,16 @@ const CORREZIONE_DEFAULT = {
   "D-02-005": "Verificare l'obbligo specifico di CPI per l'attivita' svolta e, se necessario, avviare la pratica di prevenzione incendi presso il Comando Provinciale dei Vigili del Fuoco competente.",
   "D-02-006": "Raccogliere e aggiornare le schede di sicurezza di tutti i prodotti chimici utilizzati, verificando che siano nella versione aggiornata (formato a 16 sezioni) e accessibili ai lavoratori.",
   "D-02-008": "Verificare quali autorizzazioni, licenze o certificazioni sono obbligatorie per la specifica attivita' svolta e assicurarsi che siano in corso di validita'.",
-  "D-03-001": "Pianificare e documentare i percorsi formativi per tutti i lavoratori, distinguendo formazione generale (4 ore) e formazione specifica per rischio (da 4 a 12 ore in base al settore), secondo quanto previsto dall'Accordo Stato-Regioni.",
-  "D-03-002": "Identificare i preposti e verificare che abbiano completato il percorso formativo specifico previsto dall'Accordo Stato-Regioni (8 ore per i preposti).",
-  "D-03-003": "Verificare la presenza di dirigenti con delega in materia di sicurezza e garantire che abbiano completato il percorso formativo specifico (16 ore per i dirigenti).",
-  "D-03-004": "Pianificare gli aggiornamenti formativi scaduti o in scadenza. La periodicita' tipica e' quinquennale, ma verificare le specificita' di settore e ruolo.",
-  "D-03-005": "Predisporre e documentare le attivita' di informazione ai lavoratori sui rischi, sulle misure di prevenzione, sulle procedure di emergenza e sui loro diritti e doveri in materia di sicurezza.",
-  "D-03-006": "Documentare l'addestramento pratico per le attrezzature che lo richiedono (es. carrelli elevatori, PLE, macchine specifiche) con registrazione delle prove pratiche effettuate.",
-  "D-03-007": "Verificare le date dei corsi di formazione degli addetti antincendio e primo soccorso e pianificare gli aggiornamenti scaduti. I corsi hanno periodicita' specifica in base al gruppo/livello di rischio.",
-  "D-03-008": "Istituire una procedura formale di formazione in ingresso per i neoassunti e per i lavoratori che cambiano mansione, con documentazione della data di formazione rispetto alla data di assunzione o cambio.",
-  "D-03-015": "Pianificare il corso di formazione obbligatorio per il Datore di Lavoro della durata di 16 ore, ai sensi dell'Accordo Stato-Regioni 2025.",
-  "D-03-016": "Verificare e completare il percorso formativo DL-SPP: modulo comune 8 ore + moduli integrativi di settore, ai sensi dell'Accordo Stato-Regioni 2025.",
-  "D-03-017": "Per RSPP interno: completare il percorso formativo Moduli A+B+C ai sensi dell'art. 32 D.Lgs. 81/08. Per RSPP esterno: acquisire documentazione dei requisiti formativi e tenerla in azienda.",
-  "D-03-010": "Completare il percorso formativo ASPP: Moduli A+B ai sensi dell'art. 32 D.Lgs. 81/08 e pianificare gli aggiornamenti quinquennali.",
-  "D-03-012": "Pianificare corso iniziale 32 ore per il RLS e aggiornamento annuale (4 ore per aziende fino a 50 lavoratori, 8 ore per aziende oltre 50 lavoratori), ai sensi dell'art. 37 D.Lgs. 81/08.",
-  "D-03-013": "Verificare il completamento del corso antincendio specifico per il livello di rischio del luogo di lavoro e pianificare gli aggiornamenti periodici previsti.",
-  "D-03-014": "Verificare il completamento del corso di primo soccorso ai sensi del D.M. 388/2003 per il gruppo di appartenenza dell'azienda e pianificare l'aggiornamento triennale.",
+  "D-03-001": "Pianificare o completare la formazione generale e specifica per tutti i lavoratori. Verificare aggiornamenti scaduti o prossimi alla scadenza (6 ore ogni 5 anni).",
+  "D-03-002": "Pianificare formazione specifica per preposti (12 ore) e relativo aggiornamento periodico.",
+  "D-03-003": "Pianificare formazione specifica per dirigenti (12 ore) e relativo aggiornamento periodico.",
+  "D-03-004": "Pianificare il corso di formazione obbligatorio per il Datore di Lavoro della durata di 16 ore, ai sensi dell'Accordo Stato-Regioni 2025.",
+  "D-03-005": "Completare il percorso formativo DL-SPP: modulo comune 8 ore + moduli integrativi di settore, ai sensi dell'Accordo Stato-Regioni 2025.",
+  "D-03-006": "Per RSPP interno: completare il percorso formativo Moduli A+B+C ai sensi dell'art. 32 D.Lgs. 81/08. Per RSPP esterno: acquisire e conservare in azienda documentazione dei requisiti formativi del consulente.",
+  "D-03-007": "Completare il percorso formativo ASPP: Moduli A+B ai sensi dell'art. 32 D.Lgs. 81/08 e pianificare aggiornamenti quinquennali.",
+  "D-03-008": "Pianificare corso iniziale 32 ore per il RLS e aggiornamento annuale (4 ore per aziende fino a 50 lavoratori, 8 ore per aziende oltre 50 lavoratori), ai sensi dell'art. 37 D.Lgs. 81/08.",
+  "D-03-009": "Verificare e completare la formazione per gli addetti antincendio in base al livello di rischio. Pianificare l'aggiornamento quinquennale.",
+  "D-03-010": "Verificare e completare la formazione per gli addetti al primo soccorso (DM 388/2003). Pianificare l'aggiornamento triennale.",
   "D-04-001": "Verificare numero, tipo (polvere/CO2/altro), posizionamento e segnalazione degli estintori. Integrare o riposizionare secondo quanto previsto dalla valutazione del rischio incendio.",
   "D-04-002": "Procedere alla revisione periodica degli estintori scaduti attraverso ditte autorizzate. Sostituire o togliere dal servizio gli estintori non conformi.",
   "D-04-003": "Verificare la presenza della cassetta di primo soccorso e controllare che il contenuto sia completo, non scaduto e conforme all'allegato del D.M. 388/2003 relativo al gruppo di appartenenza.",
@@ -1001,9 +991,12 @@ function generaVerbalePDF() {
       body: s.domande.map((q, i) => {
         const r = state.risposte[q.id] || {};
         const v = r.v || null;
-        // azione correttiva solo per NC/PC; cella vuota (non "—") se assente
+        // azione correttiva solo per NC/PC; cella vuota (non "—") se assente.
+        // È l'unica cella che attinge a r.azione_correttiva: mai replicata in osservazioni.
         const az = (v === "NC" || v === "PC") ? (r.azione_correttiva || "") : "";
-        // nominativo (SEZ-01 / campo_extra): in testa alle osservazioni
+        // osservazioni: SOLO il testo inserito dal tecnico (r.osservazioni).
+        // Mai il testo dell'azione correttiva. Cella vuota se assente (non "—").
+        // Eccezione: il nominativo (SEZ-01 / campo_extra) viene anteposto.
         const nom = nominativoText(q.id);
         let oss = r.osservazioni || "";
         if (nom) oss = (oss ? oss + "\n" : "") + "Nominativo/i: " + nom;
@@ -1012,7 +1005,7 @@ function generaVerbalePDF() {
           q.testo,
           { content: v ? PDF_LABEL[v] : "—", styles: { textColor: v ? PDF_COL[v] : PDF_MUTED, fontStyle: "bold", halign: "center" } },
           az,
-          oss || "—"
+          oss
         ];
       })
     });
