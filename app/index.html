@@ -978,6 +978,22 @@ function generaVerbalePDF() {
      ogni NC/PC con esito colorato e azione correttiva, per evitare duplicazioni) */
   newPage();
   heading("Dettaglio sezioni");
+
+  /* Celle PDF a SORGENTE DISGIUNTA — garanzia strutturale di indipendenza.
+     Ogni colonna è costruita da una funzione pura che legge UN SOLO campo di r:
+       · cellaAzione()       → SOLO r.azione_correttiva (e solo se esito NC/PC)
+       · cellaOsservazioni()  → SOLO r.osservazioni (+ eventuale nominativo)
+     Nessuna delle due attinge mai all'altra, né a correzioneDefault/nt.
+     Costruirle come funzioni separate rende impossibile, per costruzione,
+     che il testo di una colonna finisca nell'altra. */
+  const cellaAzione = (r, v) =>
+    (v === "NC" || v === "PC") ? (r.azione_correttiva || "") : "";
+  const cellaOsservazioni = (r, qid) => {
+    const oss = r.osservazioni || "";          // unica fonte del testo del tecnico
+    const nom = nominativoText(qid);            // eccezione consentita: nominativo anteposto
+    return nom ? ((oss ? oss + "\n" : "") + "Nominativo/i: " + nom) : oss;
+  };
+
   DOMANDE.sezioni.forEach(s => {
     ensureSpace(22);
     doc.setFont("helvetica", "bold"); doc.setFontSize(11); setText(PDF_ACCENT);
@@ -991,21 +1007,12 @@ function generaVerbalePDF() {
       body: s.domande.map((q, i) => {
         const r = state.risposte[q.id] || {};
         const v = r.v || null;
-        // azione correttiva solo per NC/PC; cella vuota (non "—") se assente.
-        // È l'unica cella che attinge a r.azione_correttiva: mai replicata in osservazioni.
-        const az = (v === "NC" || v === "PC") ? (r.azione_correttiva || "") : "";
-        // osservazioni: SOLO il testo inserito dal tecnico (r.osservazioni).
-        // Mai il testo dell'azione correttiva. Cella vuota se assente (non "—").
-        // Eccezione: il nominativo (SEZ-01 / campo_extra) viene anteposto.
-        const nom = nominativoText(q.id);
-        let oss = r.osservazioni || "";
-        if (nom) oss = (oss ? oss + "\n" : "") + "Nominativo/i: " + nom;
         return [
           String(i + 1),
           q.testo,
           { content: v ? PDF_LABEL[v] : "—", styles: { textColor: v ? PDF_COL[v] : PDF_MUTED, fontStyle: "bold", halign: "center" } },
-          az,
-          oss
+          cellaAzione(r, v),          // colonna "Azione correttiva" — solo r.azione_correttiva
+          cellaOsservazioni(r, q.id)  // colonna "Osservazioni" — solo r.osservazioni (+ nominativo)
         ];
       })
     });
